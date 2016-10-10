@@ -1,0 +1,68 @@
+\documentclass{article}
+
+% \usepackage[margin=0.75in]{geometry}
+
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{epstopdf} 
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{bm}
+
+\usepackage{stackengine}
+\def\delequal{\mathrel{\ensurestackMath{\stackon[1pt]{=}{\scriptstyle\Delta}}}}
+
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries}   % The style of the section title
+  {}                             % a prefix
+  {0pt}                          % How much space exists between the prefix and the title
+  {Question \thesection:\quad}    % How the section is represented
+
+% Starred variant
+\titleformat{name=\section,numberless}
+  {\normalfont\Large\bfseries}
+  {}
+  {0pt}
+  {}
+
+\renewcommand{\thesubsection}{\thesection.\alph{subsection}}
+
+\begin{document}
+\title{Comp 6321 - Machine Learning - Assignment 2}
+\author{Federico O'Reilly Regueiro}
+\date{October 18th, 2016}
+\maketitle
+
+%------------------------ Q1 ------------------------%
+\section{} 
+%------------------------  a ------------------------%
+\subsection{Doodles}
+\begin{equation}
+	\arg \min\limits_{w}\frac{1}{2}(\bm{\Phi w - y})^T(\bm{\Phi w - y}) + \frac{\lambda}{2}\sum\limits_{k=0}^{K-1}|w_k|\\
+\end{equation}
+Which is equivalent to finding:
+\begin{equation}
+	\arg \min\limits_{w}(\bm{\Phi w - y})^T(\bm{\Phi w - y}) + \lambda\sum\limits_{k=0}^{K-1}|w_k|\\
+\end{equation}
+And expands to:
+\begin{equation}
+	\arg \min\limits_{w}\bm{w}^T\bm{\Phi}^T\bm{\Phi w} - 2y^T\bm{\Phi w} + \bm{y}^T\bm{y}^T + \lambda\sum\limits_{k=0}^{K-1}|w_k|\\
+\end{equation}
+And for which we can remove the constant term $\bm{y}^T\bm{y}$, yielding:
+\begin{equation}
+	\arg \min\limits_{w}\bm{w}^T\bm{\Phi}^T\bm{\Phi w - 2y}^T\bm{\Phi w}^T + \lambda\sum\limits_{k=0}^{K-1}|w_k|\\
+\end{equation}
+Matlab's \texttt{quadprog(H, f, A, b)} function, gives the optimal $\bm{x}$ corresponding to the expression $\arg\min\limits_{x}  \bm{x}^T\bm{Hx} + \bm{f}^T\bm{x}$,  subject to constraints $\bm{Ax} \leq \bm{b}$. We can thus take \texttt{H :=} $\bm{\Phi}^T\bm{\Phi}$, then \texttt{f :=} $2\bm{y}^T\bm{\Phi}$, \texttt{A :=}$\lambda \bm{P}$, where for a system with $n$  variables, $\bm{P}$ is the matrix with $2^n$ permutations of $[b_1, b_2, \ldots b_n], b \in \{-1, 1\}$ and lastly \texttt{b :=} $c\bm{\stackrel{\rightarrow}{1}}$ places an upper bound to the expression 
+$\lambda\sum_{k=0}^{K-1}|w_k|$, such that $\sum_{k=0}^{K-1}|w_k| \leq \frac{c}{\lambda}$ TODO develop relationship between lambda, c and whatnot, too tired to think now...
+\\
+
+This here, on the other hand, is something else...
+\begin{equation}
+\begin{aligned}
+	\min\limits_{w} J_D(\textbf{w}) &= \min\limits_{w} (\bm{\Phi w - y})^T(\bm{\Phi w - y})\\
+	s.t. \sum\limits_{i=1}^{n}|w_i| & \leq \eta \\
+\end{aligned}
+\end{equation}
+
+\end{document}

@@ -15,25 +15,27 @@ idxs = randperm(size(phi, 1));
 idx_training = idxs(1:89);
 idx_test = idxs(90:99);
 
-phi_training = phi(idx_training);
+phi_training = phi(idx_training, :);
 y_training = y(idx_training);
-phi_test = phi(idx_test);
+phi_test = phi(idx_test, :);
 y_test = y(idx_test);
 
 lambdas = 0:0.3:10;
 lambdas = lambdas .^ 2;
+w = zeros(length(lambdas), size(phi,2));
 for lambda = lambdas
   idx = lambda == lambdas;
   % Train the model
-  w(:, idx) = (phi_training' * phi_training + (lambda * ones(size(phi, 2)))) ...
+  w(idx, :) =(phi_training' * phi_training ...
+                + (lambda * ones(size(phi_training, 2)))) ...
                 \ (phi_training' * y_training);
-  h_phi_training(:, idx) = phi_training * w(:, idx);
-  j_h_training(:, idx) = (sum((h_phi_training - y_training).^2) ...
-                            / (2*size(phi_training,1)))^0.5;
+  h_phi_training(:, idx) = phi_training * w(idx, :)';
+  j_h_training(idx) = (sum((h_phi_training(:, idx) - y_training).^2) ...
+                            / (2*size(phi_training,1))).^0.5;
   % Now compare to the test
-  h_phi_training(:, idx) = phi_training * w(:, idx);
-  j_h_training(:, idx) = (sum((h_phi_training - y_training).^2) ...
-                            / (2*size(phi_training,1)))^0.5;                          
+  h_phi_test(:, idx) = phi_test * w(idx, :)';
+  j_h_test(idx) = (sum((h_phi_test(:, idx) - y_test).^2) ...
+                            / (2*size(phi_test,1))).^0.5;                          
 end
 
 % Now plot
