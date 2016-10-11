@@ -37,7 +37,9 @@
 %------------------------ Q1 ------------------------%
 \section{} 
 %------------------------  a ------------------------%
-\subsection{Doodles}
+\subsection{Partition the data into training / testing, 90 to 10 and perform and plot $L2$ regularization}
+Lorem Ipsum
+\subsection{Use the \texttt{quadprog} function in Matlab for $L1$ regularization}
 \begin{equation}
 	\arg \min\limits_{w}\frac{1}{2}(\bm{\Phi w - y})^T(\bm{\Phi w - y}) + \frac{\lambda}{2}\sum\limits_{k=0}^{K-1}|w_k|\\
 \end{equation}
@@ -53,16 +55,18 @@ And for which we can remove the constant term $\bm{y}^T\bm{y}$, yielding:
 \begin{equation}
 	\arg \min\limits_{w}\bm{w}^T\bm{\Phi}^T\bm{\Phi w - 2y}^T\bm{\Phi w}^T + \lambda\sum\limits_{k=0}^{K-1}|w_k|\\
 \end{equation}
-Matlab's \texttt{quadprog(H, f, A, b)} function, gives the optimal $\bm{x}$ corresponding to the expression $\arg\min\limits_{x}  \frac{1}{2}\bm{x}^T\bm{Hx} + \bm{f}^T\bm{x}$,  subject to constraints $\bm{Ax} \leq \bm{b}$. We can thus take \texttt{H :=} $2\bm{\Phi}^T\bm{\Phi}$, then \texttt{f :=} $2\bm{y}^T\bm{\Phi}$, \texttt{A :=}$\lambda \bm{P}$, where for a system with $n$  variables, $\bm{P}$ is the matrix with $2^n$ permutations of $[b_1, b_2, \ldots b_n], b \in \{-1, 1\}$ and lastly \texttt{b :=} $c\bm{\stackrel{\rightarrow}{1}}$ places an upper bound to the expression 
-$\lambda\sum_{k=0}^{K-1}|w_k|$, such that $\sum_{k=0}^{K-1}|w_k| \leq \frac{c}{\lambda}$ TODO develop relationship between lambda, c and whatnot, too tired to think now...
+Matlab's \texttt{quadprog(H, f, A, b)} function, gives the optimal $\bm{x}$ corresponding to the expression 
+$\arg\min\limits_{x}  \frac{1}{2}\bm{x}^T\bm{Hx} + \bm{f}^T\bm{x}$,  
+subject to constraints 
+$\bm{Ax} \leq \bm{b}$. 
+We can thus take \texttt{H :=} $2\bm{\Phi}^T\bm{\Phi}$, 
+then \texttt{f :=} $2\bm{y}^T\bm{\Phi}$, 
+\texttt{A :=}$\lambda \bm{P}$, where for a system with $n$  variables, 
+$\bm{P}$ is the matrix with $2^n$ permutations of $[b_1, b_2, \ldots b_n, 0]\footnote{the last zero entry is to avoid the regularization of the intercept term}, b \in \{-1, 1\}$ 
+and lastly \texttt{b :=} $c\bm{\stackrel{\rightarrow}{1}}$, 
+where$\bm{\stackrel{\rightarrow}{1}}$ is an all-one vector of length $2^n$ that places an upper bound to the 
+expression 
+$\lambda\sum_{k=0}^{K-1}|w_k|$, such that $\sum_{k=0}^{K-1}|w_k| \leq \frac{c}{\lambda}$. 
+If we set $c = 1$, then we parametrize $L1$ regularization simply by adjusting $\lambda$ accordingly.
 \\
-
-This here, on the other hand, is something else...
-\begin{equation}
-\begin{aligned}
-	\min\limits_{w} J_D(\textbf{w}) &= \min\limits_{w} (\bm{\Phi w - y})^T(\bm{\Phi w - y})\\
-	s.t. \sum\limits_{i=1}^{n}|w_i| & \leq \eta \\
-\end{aligned}
-\end{equation}
-
 \end{document}
