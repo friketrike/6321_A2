@@ -53,7 +53,7 @@ And for which we can remove the constant term $\bm{y}^T\bm{y}$, yielding:
 \begin{equation}
 	\arg \min\limits_{w}\bm{w}^T\bm{\Phi}^T\bm{\Phi w - 2y}^T\bm{\Phi w}^T + \lambda\sum\limits_{k=0}^{K-1}|w_k|\\
 \end{equation}
-Matlab's \texttt{quadprog(H, f, A, b)} function, gives the optimal $\bm{x}$ corresponding to the expression $\arg\min\limits_{x}  \bm{x}^T\bm{Hx} + \bm{f}^T\bm{x}$,  subject to constraints $\bm{Ax} \leq \bm{b}$. We can thus take \texttt{H :=} $\bm{\Phi}^T\bm{\Phi}$, then \texttt{f :=} $2\bm{y}^T\bm{\Phi}$, \texttt{A :=}$\lambda \bm{P}$, where for a system with $n$  variables, $\bm{P}$ is the matrix with $2^n$ permutations of $[b_1, b_2, \ldots b_n], b \in \{-1, 1\}$ and lastly \texttt{b :=} $c\bm{\stackrel{\rightarrow}{1}}$ places an upper bound to the expression 
+Matlab's \texttt{quadprog(H, f, A, b)} function, gives the optimal $\bm{x}$ corresponding to the expression $\arg\min\limits_{x}  \frac{1}{2}\bm{x}^T\bm{Hx} + \bm{f}^T\bm{x}$,  subject to constraints $\bm{Ax} \leq \bm{b}$. We can thus take \texttt{H :=} $2\bm{\Phi}^T\bm{\Phi}$, then \texttt{f :=} $2\bm{y}^T\bm{\Phi}$, \texttt{A :=}$\lambda \bm{P}$, where for a system with $n$  variables, $\bm{P}$ is the matrix with $2^n$ permutations of $[b_1, b_2, \ldots b_n], b \in \{-1, 1\}$ and lastly \texttt{b :=} $c\bm{\stackrel{\rightarrow}{1}}$ places an upper bound to the expression 
 $\lambda\sum_{k=0}^{K-1}|w_k|$, such that $\sum_{k=0}^{K-1}|w_k| \leq \frac{c}{\lambda}$ TODO develop relationship between lambda, c and whatnot, too tired to think now...
 \\
 
