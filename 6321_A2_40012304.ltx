@@ -8,6 +8,10 @@
 \usepackage{caption}
 \usepackage{amsmath}
 \usepackage{bm}
+\usepackage{listings}
+\usepackage{float}
+
+\lstset{language=Matlab}
 
 \usepackage{stackengine}
 \def\delequal{\mathrel{\ensurestackMath{\stackon[1pt]{=}{\scriptstyle\Delta}}}}
@@ -38,8 +42,64 @@
 \section{} 
 %------------------------  a ------------------------%
 \subsection{Partition the data into training / testing, 90 to 10 and perform and plot $L2$ regularization}
-Lorem Ipsum
+The data was partitioned pseudo-randomly.
+\begin{lstlisting}
+phi = load('hw2x.dat');
+phi = [phi, ones(size(phi,1),1)];
+y = load('hw2y.dat');
+
+% Partition the data randomly.
+idxs = randperm(size(phi, 1));
+idx_training = idxs(1:89);
+idx_test = idxs(90:99);
+
+phi_training = phi(idx_training, :);
+y_training = y(idx_training);
+phi_test = phi(idx_test, :);
+y_test = y(idx_test);
+\end{lstlisting}
+Next, a range of lambdas was chosen, going from 0 to almost 14000 in order to get a good sense of the trend of both the error 
+and the coefficients. The former was plotted in both a range of small values as well as along the whole set of lambdas
+ for which the $RMS$ error was calculated. This in order to allow us to see the behaviour of the test and training errors
+  for lower values of $\lambda$ as well as the overall trend of the $RMS$ the resulting plot can be seen in Figure \ref{fig:rms-w-lambda-l2}.
+
+\begin{lstlisting}
+lambdas = 0:0.1:24;
+lambdas = lambdas .^ 3;
+
+w = zeros(length(lambdas), size(phi,2));
+
+for lambda = lambdas
+  idx = lambda == lambdas;
+  
+  % Train the model
+  w(idx, :) = pinv(phi_train' * phi_train ...
+                + (lambda * eye(size(phi_train, 2)))) ...
+                * (phi_train' * y_train);
+                
+  h_phi_train(:, idx) = phi_train * w(idx, :)';
+  j_h_train(idx) = rms(h_phi_train(:, idx) - y_train);
+  
+  % Now compare to the test
+  h_phi_test(:, idx) = phi_test * w(idx, :)';
+  j_h_test(idx) = rms(h_phi_test(:, idx) - y_test);                          
+end
+\end{lstlisting}
+
+\begin{figure}[H]
+\begin{center}
+	\includegraphics[width=4in, trim=1in 3in 1in 3in]{RMS_w_lambda_L2}
+\caption{Plot of the RMS training and testing error as well as the coefficients over a wide range of $\lambda$.}\label{fig:rms-w-lambda-l2}%      only if needed  
+\end{center}
+\end{figure}
+On the top-left plot of figure \ref{fig:rms-w-lambda-l2} can observe that as expected, the test error goes down as $\lambda$ grows. Howerver, as $\lambda$ continues to increase, the test error closely follows the training error as they both grow since the restrictions on the coefficients make for a worse fit at a certain point.
+
+%------------------------------------- b ------------------------------------------ %
 \subsection{Use the \texttt{quadprog} function in Matlab for $L1$ regularization}
+In order to use \texttt{quadprog} for regularization, we must first find the Hessian matrix \texttt{H} as well as other parameters
+\texttt{f}, \texttt{A}, \texttt{b} in the specific format that Matlab requires.
+
+We recall that for $L1$ regularization the expression we must minimize is:
 \begin{equation}
 	\arg \min\limits_{w}\frac{1}{2}(\bm{\Phi w - y})^T(\bm{\Phi w - y}) + \frac{\lambda}{2}\sum\limits_{k=0}^{K-1}|w_k|\\
 \end{equation}
@@ -60,7 +120,7 @@ $\arg\min\limits_{x}  \frac{1}{2}\bm{x}^T\bm{Hx} + \bm{f}^T\bm{x}$,
 subject to constraints 
 $\bm{Ax} \leq \bm{b}$. 
 We can thus take \texttt{H :=} $2\bm{\Phi}^T\bm{\Phi}$, 
-then \texttt{f :=} $2\bm{y}^T\bm{\Phi}$, 
+then \texttt{f :=} $-2\bm{y}^T\bm{\Phi}$, 
 \texttt{A :=}$\lambda \bm{P}$, where for a system with $n$  variables, 
 $\bm{P}$ is the matrix with $2^n$ permutations of $[b_1, b_2, \ldots b_n, 0]\footnote{the last zero entry is to avoid the regularization of the intercept term}, b \in \{-1, 1\}$ 
 and lastly \texttt{b :=} $c\bm{\stackrel{\rightarrow}{1}}$, 
@@ -68,5 +128,59 @@ where$\bm{\stackrel{\rightarrow}{1}}$ is an all-one vector of length $2^n$ that 
 expression 
 $\lambda\sum_{k=0}^{K-1}|w_k|$, such that $\sum_{k=0}^{K-1}|w_k| \leq \frac{c}{\lambda}$. 
 If we set $c = 1$, then we parametrize $L1$ regularization simply by adjusting $\lambda$ accordingly.
-\\
+
+Thus we end up with the following code:
+
+\begin{lstlisting}
+for lambda = lambdas
+  idx = lambda == lambdas;
+  w_quad(idx,:) = quadprog(2*(phi_train'*phi_train), ...
+                    -2*(phi_train'*y_train), ...
+                    lambda*[ 1, 1, 1, 0;   1, 1,-1, 0;   ...
+                      	     1,-1, 1, 0;   1,-1,-1, 0;   ...
+			    -1, 1, 1, 0;  -1, 1,-1, 0;   ...
+			     1,-1, 1, 0;  -1,-1,-1, 0],  ... 
+                      	[1; 1; 1; 1; 1; 1; 1; 1]);
+  h_phi_train_quad(:, idx) = phi_train * w_quad(idx, :)';
+  j_h_train_quad(idx) = rms(h_phi_train_quad(:, idx) - y_train);
+  % Now compare to the test
+  h_phi_test_quad(:, idx) = phi_test * w_quad(idx, :)';
+  j_h_test_quad(idx) = rms(h_phi_test_quad(:, idx) - y_test);
+end
+\end{lstlisting}
+
+% ----------------------------- c ---------------------------
+\subsection{Plot $L1$ $RMS$ and coefficients, $w$ against $\lambda$ and comment}
+In Figure \ref{fig:rms-lambda-l1}, we can again notice how the test error slightly decreases for the lowest values of $\lambda$ and then sharply increases as the coefficients are all forced towards 0. 
+\begin{figure}[H]
+\begin{center}
+	\includegraphics[width=4in, trim=1in 3in 1in 3in]{RMS_lambda_L1}
+\caption{The RMS training and testing error for a wide range of $\lambda$.}\label{fig:rms-lambda-l1}
+\end{center}
+\end{figure}
+
+By the same token, in figure \ref{fig:w-lambda-l1} we can see how both $w_2$ and $w_3$ sharply decrease to 0 when
+$\lambda=2$ and the model relies solely on $w_1$\footnote{$w_4$ is the bias 
+term, so we can't really say the model relies on it a it is not an input.}
+which then decreases gradually, as opposed to figure \ref{fig:rms-w-lambda-l2}, where we can observe how all coefficients
+approach 0 at a similar rate during $L2$ regularization. 
+
+This particular data-set would lead to believe that the data was generated mainly by some function $f(w_1) + \epsilon$. This hypothesis
+is supported by the following output:
+\begin{lstlisting}
+corr(y, phi(:,1:3))
+ans =
+  -0.848189  -0.017339  -0.024943
+\end{lstlisting}
+which reveals that the correlation between $\Phi_{:,1}$ and $y$ is much larger than between other columns of $\Phi$ and $y$.
+
+TODO change indexing from 1-based to 0-based
+
+\begin{figure}[H]
+\begin{center}
+	\includegraphics[width=4in, trim=1in 3in 1in 3in]{w_lambda_L1}
+\caption{The RMS training and testing error for a wide range of $\lambda$.}\label{fig:w-lambda-l1}
+\end{center}
+\end{figure}
+
 \end{document}
