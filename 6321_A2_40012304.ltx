@@ -42,7 +42,11 @@
 \section{} 
 %------------------------  a ------------------------%
 \subsection{Partition the data into training / testing, 90 to 10 and perform and plot $L2$ regularization}
-The data was partitioned pseudo-randomly.
+The data was partitioned pseudo-randomly\footnote{I have included the permutation indexes yielded by 
+matlab for the instance of the 90 / 10 partition from which the plots and values were drawn. Suffice it to 
+uncomment two lines and comment-out two others in order to partition the data randomly, 
+yet similar results (at different scales of $\lambda$) can be observed.}.
+
 \begin{lstlisting}
 phi = load('hw2x.dat');
 phi = [phi, ones(size(phi,1),1)];
@@ -50,14 +54,15 @@ y = load('hw2y.dat');
 
 % Partition the data randomly.
 idxs = randperm(size(phi, 1));
-idx_training = idxs(1:89);
+idx_train = idxs(1:89);
 idx_test = idxs(90:99);
 
-phi_training = phi(idx_training, :);
-y_training = y(idx_training);
+phi_train = phi(idx_train, :);
+y_train = y(idx_train);
 phi_test = phi(idx_test, :);
 y_test = y(idx_test);
 \end{lstlisting}
+
 Next, a range of lambdas was chosen, going from 0 to almost 14000 in order to get a good sense of the trend of both the error 
 and the coefficients. The former was plotted in both a range of small values as well as along the whole set of lambdas
  for which the $RMS$ error was calculated. This in order to allow us to see the behaviour of the test and training errors
@@ -82,7 +87,7 @@ for lambda = lambdas
   
   % Now compare to the test
   h_phi_test(:, idx) = phi_test * w(idx, :)';
-  j_h_test(idx) = rms(h_phi_test(:, idx) - y_test);                          
+  j_h_test(idx) = rms(h_phi_test(:, idx) - y_test);        
 end
 \end{lstlisting}
 
@@ -130,7 +135,6 @@ $\lambda\sum_{k=0}^{K-1}|w_k|$, such that $\sum_{k=0}^{K-1}|w_k| \leq \frac{c}{\
 If we set $c = 1$, then we parametrize $L1$ regularization simply by adjusting $\lambda$ accordingly.
 
 Thus we end up with the following code:
-
 \begin{lstlisting}
 for lambda = lambdas
   idx = lambda == lambdas;
@@ -141,8 +145,10 @@ for lambda = lambdas
 			    -1, 1, 1, 0;  -1, 1,-1, 0;   ...
 			     1,-1, 1, 0;  -1,-1,-1, 0],  ... 
                       	[1; 1; 1; 1; 1; 1; 1; 1]);
+
   h_phi_train_quad(:, idx) = phi_train * w_quad(idx, :)';
-  j_h_train_quad(idx) = rms(h_phi_train_quad(:, idx) - y_train);
+  j_h_train_quad(idx) = rms(h_phi_train_quad(:, idx) - y_train); 
+
   % Now compare to the test
   h_phi_test_quad(:, idx) = phi_test * w_quad(idx, :)';
   j_h_test_quad(idx) = rms(h_phi_test_quad(:, idx) - y_test);
@@ -151,7 +157,9 @@ end
 
 % ----------------------------- c ---------------------------
 \subsection{Plot $L1$ $RMS$ and coefficients, $w$ against $\lambda$ and comment}
-In Figure \ref{fig:rms-lambda-l1}, we can again notice how the test error slightly decreases for the lowest values of $\lambda$ and then sharply increases as the coefficients are all forced towards 0. 
+In Figure \ref{fig:rms-lambda-l1}, we can again notice how the test error slightly decreases for the lowest values of $\lambda$ and then monotonically
+increases as the coefficients are all forced towards 0. We also note that $L1$ yields a lower minimum error (1.0098) than $L2$ regularization (1.0257).
+
 \begin{figure}[H]
 \begin{center}
 	\includegraphics[width=4in, trim=1in 3in 1in 3in]{RMS_lambda_L1}
@@ -163,7 +171,8 @@ By the same token, in figure \ref{fig:w-lambda-l1} we can see how both $w_2$ and
 $\lambda=2$ and the model relies solely on $w_1$\footnote{$w_4$ is the bias 
 term, so we can't really say the model relies on it a it is not an input.}
 which then decreases gradually, as opposed to figure \ref{fig:rms-w-lambda-l2}, where we can observe how all coefficients
-approach 0 at a similar rate during $L2$ regularization. 
+approach 0 at a similar rate during $L2$ regularization. Conversely, as is expected we can see that both
+errors and coefficients are equal between $L1$ and $L2$ regularization when $\lambda =0$.
 
 This particular data-set would lead to believe that the data was generated mainly by some function $f(w_1) + \epsilon$. This hypothesis
 is supported by the following output:
