@@ -70,8 +70,6 @@ legend('w_1{L2}', 'w_2{L2}', 'w_3{L2}', 'w_4{L2}')
 axis([0, 3500, -0.5, 0.17])
 hold off
 
-print test.pdf
-
 w_quad = zeros(length(lambdas), size(phi,2));
 for lambda = lambdas
   idx = lambda == lambdas;
