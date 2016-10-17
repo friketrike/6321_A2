@@ -19,7 +19,7 @@ y_training = y(idx_training);
 phi_test = phi(idx_test, :);
 y_test = y(idx_test);
 
-lambdas = 0:0.1:24;
+lambdas = 0:0.1:50;
 lambdas = lambdas .^ 3;
 w = zeros(length(lambdas), size(phi,2));
 for lambda = lambdas
@@ -38,35 +38,35 @@ end
 % Now plot
 figure(1); % RMS train / test vs lambda
 subplot(2,2,1)
-plot(lambdas(1:35), j_h_training(1:35), '.k')
+plot(lambdas(1:35), j_h_training(1:35), 'k')
 title('RMS L2 \lambda < 40')
 xlabel('\lambda')
 ylabel('\epsilon_{L2} RMS')
 hold on
-plot(lambdas(1:35), j_h_test(1:35), '.g')
-legend('training set', 'test set')
+plot(lambdas(1:35), j_h_test(1:35), 'g')
+legend('training set', 'test set', 'location', 'southeast')
 hold off
 
 subplot(2,2,2)
-plot(lambdas, j_h_training, '.k')
+plot(lambdas, j_h_training, 'k')
 title('RMS L2 \lambda')
 xlabel('\lambda')
 ylabel('\epsilon_{L2} RMS')
 hold on
-plot(lambdas, j_h_test, '.g')
-legend('training set', 'test set')
+plot(lambdas, j_h_test, 'g')
+legend('training set', 'test set', 'location', 'southeast')
 hold off
 
 % Weights w_{L2} as a function of lambda
 subplot(2,2,3:4)
-plot(lambdas, w(:,1), '.k')
+plot(lambdas, w(:,1), 'k')
 title('w_{n}L2 as a function of \lambda')
 xlabel('\lambda')
 hold on
-plot(lambdas, w(:,2), '.g')
-plot(lambdas, w(:,3), '.r')
-plot(lambdas, w(:,4), '.')
-legend('w_1{L2}', 'w_2{L2}', 'w_3{L2}', 'w_4{L2}')
+plot(lambdas, w(:,2), 'g')
+plot(lambdas, w(:,3), 'r')
+plot(lambdas, w(:,4))
+legend('w_1{L2}', 'w_2{L2}', 'w_3{L2}', 'w_0{L2}', 'location', 'southeast')
 axis([0, 3500, -0.5, 0.17])
 hold off
 
@@ -75,9 +75,11 @@ for lambda = lambdas
   idx = lambda == lambdas;
   w_quad(idx,:) = quadprog(2*(phi_training'*phi_training), ...
                       -2*(phi_training'*y_training), ...
-                      lambda*[1,1,1,0;1,1,-1,0;1,-1,1,0;1,-1,-1,0;...
-                              -1,1,1,0;-1,1,-1,0;-1,-1,1,0;-1,-1,-1,0],... 
-                      [1;1;1;1;1;1;1;1]);
+                      lambda*[1,1,1,1;1,1,-1,1;1,-1,1,1;1,-1,-1,1;...
+                              -1,1,1,1;-1,1,-1,1;-1,-1,1,1;-1,-1,-1,1;...
+                              1,1,1,-1;1,1,-1,-1;1,-1,1,-1;1,-1,-1,-1;...
+                              -1,1,1,-1;-1,1,-1,-1;-1,-1,1,-1;-1,-1,-1,-1],... 
+                      [1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1]);
   h_phi_training_quad(:, idx) = phi_training * w_quad(idx, :)';
   j_h_training_quad(idx) = rms(h_phi_training_quad(:, idx) - y_training);
   % Now compare to the test
@@ -88,49 +90,53 @@ end
 % Now plot L1
 figure(2); % RMS train / test vs lambda
 subplot(2,1,1)
-plot(lambdas(1:25), j_h_training_quad(1:25), '.k')
+plot(lambdas(1:25), j_h_training_quad(1:25), 'k')
 title('RMS error for L1 regularization')
-xlabel('\lambda')
+xlabel('~\lambda')
 ylabel('\epsilon_{L1} RMS')
 hold on
-plot(lambdas(1:25), j_h_test_quad(1:25), '.g')
-legend('training set', 'test set')
+plot(lambdas(1:25), j_h_test_quad(1:25), 'g')
+legend('training set', 'test set', 'location', 'southeast')
 hold off
 subplot(2,1,2)
-plot(lambdas(1:50), j_h_training_quad(1:50), '.k')
+plot(lambdas(1:75), j_h_training_quad(1:75), 'k')
 title('RMS error for L1 regularization')
-xlabel('\lambda')
+xlabel('~\lambda')
 ylabel('\epsilon_{L1} RMS')
 hold on
-plot(lambdas(1:50), j_h_test_quad(1:50), '.g')
-legend('training set', 'test set')
+plot(lambdas(1:75), j_h_test_quad(1:75), 'g')
+legend('training set', 'test set', 'location', 'southeast')
 hold off
 
 % Weights as a function of lambda
 figure(4); 
 subplot(2,2,1)
 title('w_{L1} as a function of \lambda')
-plot(lambdas, w_quad(:,2), 'xg')
+plot(lambdas, w_quad(:,2), 'g')
 hold on
-plot(lambdas, w_quad(:,3), '.r')
-legend('w_2{L1}', 'w_3{L1}')
-axis([0, 3, -0.05, 0.05])
+plot(lambdas, w_quad(:,3), 'r')
+xlabel('~\lambda')
+legend('w_2{L1}', 'w_3{L1}', 'location', 'southeast')
+axis([0, 3, -0.05, 0.1])
 hold off
 subplot(2,2,2)
-plot(lambdas(1:23), w_quad(1:23,1), '.k')
+plot(lambdas(1:23), w_quad(1:23,1), 'k')
+xlabel('~\lambda')
 title('w_{L1} as a function of \lambda')
 hold on
-plot(lambdas(1:23), w_quad(1:23,2), 'xg')
-plot(lambdas(1:23), w_quad(1:23,3), '.r')
-plot(lambdas(1:23), w_quad(1:23,4), '.')
-legend('w_1{L1}', 'w_2{L1}', 'w_3{L1}','w_4{L1}')
+plot(lambdas(1:23), w_quad(1:23,2), '.g')
+plot(lambdas(1:23), w_quad(1:23,3), 'r')
+plot(lambdas(1:23), w_quad(1:23,4))
+xlabel('~\lambda')
+legend('w_1{L1}', 'w_2{L1}', 'w_3{L1}','w_0{L1}')
 hold off
 subplot(2,2,3:4)
-plot(lambdas(1:35), w_quad(1:35,1), '.k')
+plot(lambdas(1:35), w_quad(1:35,1), 'k')
 title('Trend of all coefficients')
 hold on
-plot(lambdas(1:35), w_quad(1:35,2), 'xg')
-plot(lambdas(1:35), w_quad(1:35,3), '.r')
-plot(lambdas(1:35), w_quad(1:35,4), '.')
-legend('w_1{L1}', 'w_2{L1}', 'w_3{L1}','w_4{L1}')
+plot(lambdas(1:35), w_quad(1:35,2), '.g')
+plot(lambdas(1:35), w_quad(1:35,3), 'r')
+plot(lambdas(1:35), w_quad(1:35,4))
+xlabel('~\lambda')
+legend('w_1{L1}', 'w_2{L1}', 'w_3{L1}','w_0{L1}', 'location', 'southeast')
 hold off
