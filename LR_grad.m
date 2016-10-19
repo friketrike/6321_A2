@@ -2,7 +2,7 @@ function [ w, w_inits ] = LR_grad( X, y, lr, w_inits, num_rand_inits )
 %LR_GRAD Summary of this function goes here
 %   Detailed explanation goes here
     if nargin < 3 || isempty(lr)
-       lr = 0.5;
+       lr = 1/3;
        % TODO, something smarter here to find a better learning rate
     end
 
@@ -18,21 +18,26 @@ function [ w, w_inits ] = LR_grad( X, y, lr, w_inits, num_rand_inits )
     else
         num_rand_inits = size(w_inits(2));
     end
-
+    
+    w = w_inits;
     for i = 1: num_rand_inits
-        w = w_inits(:,i);
         done = false;
-        prev_epsilon_mean = realmax;
+        prev_epsilon = realmax * ones(length(y),1);
         while ~done
-            epsilon = y - (1./(1+exp(-X*w)));
+            epsilon = y - (1./(1+exp(-X*w(:,i))));
             %i
             %mean(epsilon)
-            w = w + lr * (X'*epsilon);
+            w(:,i) = w(:,i) + lr * (X'*epsilon);
             % TODO, think about cutoff strategy, observe behaviour...
-            if (abs(prev_epsilon_mean - mean(epsilon)) < .0000001)
+            if (abs(mean(prev_epsilon) - mean(epsilon)) < .00001)
                 done = true;
             else
-                prev_epsilon_mean = mean(epsilon);
+                if abs(mean(epsilon)) < abs(mean(prev_epsilon))
+                   lr = lr * 3;
+                elseif abs(mean(epsilon)) > abs(mean(prev_epsilon))
+                    lr = lr / 3;
+                end
+                prev_epsilon = epsilon;
             end
         end
     end
