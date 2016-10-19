@@ -15,6 +15,7 @@ function [ w, w_inits ] = LR_grad( X, y, lr, w_inits, num_rand_inits )
     if nargin < 4 || isempty(w_inits)
         w_inits = 10*rand(size(X,2), num_rand_inits); 
         %TODO, see how far apart these random points should be
+        w_inits(:,1) = 0; % TODO remove...
     else
         num_rand_inits = size(w_inits(2));
     end
@@ -29,13 +30,13 @@ function [ w, w_inits ] = LR_grad( X, y, lr, w_inits, num_rand_inits )
             %mean(epsilon)
             w(:,i) = w(:,i) + lr * (X'*epsilon);
             % TODO, think about cutoff strategy, observe behaviour...
-            if (abs(mean(prev_epsilon) - mean(epsilon)) < .00001)
+            if (abs(mean(prev_epsilon) - mean(epsilon)) < .0000001)
                 done = true;
             else
                 if abs(mean(epsilon)) < abs(mean(prev_epsilon))
-                   lr = lr * 3;
+                   lr = min([lr * 4/3,1])
                 elseif abs(mean(epsilon)) > abs(mean(prev_epsilon))
-                    lr = lr / 3;
+                    lr = 2* lr / 3
                 end
                 prev_epsilon = epsilon;
             end
