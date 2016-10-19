@@ -7,9 +7,9 @@ y = load('wpbcy.dat');
 
 num_rand_inits = 24;
 
-w = LR_grad(X, y, [], [], 24);
+[w, w_init] = LR_grad(X, y, [], [], num_rand_inits);
 
-for i=1:8
+for i=1:num_rand_inits
     disp(sum(y - (1./(1+exp(-X*w(:,i))))))
 end
 

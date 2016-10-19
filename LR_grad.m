@@ -34,9 +34,9 @@ function [ w, w_inits ] = LR_grad( X, y, lr, w_inits, num_rand_inits )
                 done = true;
             else
                 if abs(mean(epsilon)) < abs(mean(prev_epsilon))
-                   lr = min([lr * 4/3,1])
+                   lr = min([lr * 4/3,1]);
                 elseif abs(mean(epsilon)) > abs(mean(prev_epsilon))
-                    lr = 2* lr / 3
+                    lr = 2* lr / 3;
                 end
                 prev_epsilon = epsilon;
             end
