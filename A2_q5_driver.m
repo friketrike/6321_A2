@@ -41,9 +41,23 @@ for fold = 1:num_folds
     for i=1:num_rand_inits
         errors_grad(fold, i) = sum(y_test ~= round(1./(1+exp(-X_test*w(:,i)))));
     end
-    [theta, mu_1, mu_0, sd] = gnb_train(X_train(:,1:32),y_train);
-    log_odds = gnb_predict(X_test(:,1:32), theta, mu_1, mu_0, sd);
-    %[p_y_x, y_test]
+    % remove the column of ones, GNB needs no bias as it's centered around
+    % the mean...
+    X_train(:,end) = [];
+    X_test(:,end) = [];
+    [theta, mu_1, mu_0, Sigma] = gnb_train(X_train,y_train);
+    [log_odds, p1, p0] = gnb_predict(X_test, theta, mu_1, mu_0, Sigma);
+    figure(1);
+    plot(p1, 'g'); 
+    hold on; 
+    plot(p0, 'r'); 
+    plot(y_test.*max(p0), 'k*')
+    plot((log_odds > 0)*max(p0), 'o')
+    title(['Class and GNB class prediction for fold ', num2str(fold)]);
+    xlabel('instances of x');
+    legend('P(y = 1|X)', 'P(y = 0|X)', 'y', 'y\^', 'location', 'east');
+    hold off
+    pause(0.5);
     errors_gnb(fold) = sum(((log_odds > 0) ~= y_test));
 end
 
@@ -56,29 +70,15 @@ err = abs(mean(errors_gnb));
 disp('For Gaussian Naive Bayes:');
 disp(sprintf('the error is %d', err));
 
-for i = 1:10
-plot(w_grad(i,:,idx))
-hold on
-end
-plot(mean(w_grad(:,:,idx),1), 'r--o')
-hold off
-legend('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'mean');
-
-% [theta, mu_0, mu_1, sd] = gnb_train(X(:,1:10),y);
-% p_y_x = gnb_predict(X(:,1:10), theta, mu_1, mu_0, sd);
-% sum((p_y_x > 0) ~= y)
-
-% TODO implement bayes?
-
-% TODO check error of the whole set with the mean of the coefficients?
-
-% TODO use cross-entropy for validation?
-
-% TODO check the proximity of closest vectors to the one with min error
-
-%%little snippet to check for solutions that fall close to each other
-% for i = 1:num_rand_inits
-%     for j = 1:num_rand_inits
-%         norms(i,j) = norm(w(:,i)-w(:,j));
-%     end
+% for i = 1:10
+%     figure(2)
+%     plot(w_grad(i,:,idx))
+%     hold on
 % end
+% plot(mean(w_grad(:,:,idx),1), 'r--o')
+% title('Resulting w coefficients over the 10 folds');
+% hold off
+% legend('w_{f_1}', 'w_{f_2}', 'w_{f_3}', 'w_{f_4}',...
+%        'w_{f_5}', 'w_{f_6}', 'w_{f_7}', 'w_{f_8}',...
+%        'w_{f_9}', 'w_{f_{10}}', 'mean');
+
