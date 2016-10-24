@@ -70,19 +70,20 @@ legend('w_1{L2}', 'w_2{L2}', 'w_3{L2}', 'w_0{L2}', 'location', 'southeast')
 axis([0, 3500, -0.5, 0.17])
 hold off
 
-w_quad = zeros(length(lambdas), size(phi,2));
-for lambda = lambdas
-  idx = lambda == lambdas;
+etas = 1./lambdas;
+w_quad = zeros(length(etas), size(phi,2));
+for eta = etas
+  idx = eta == etas;
   w_quad(idx,:) = quadprog(2*(phi_training'*phi_training), ...
                       -2*(phi_training'*y_training), ...
-                      lambda*[1,1,1,1;1,1,-1,1;1,-1,1,1;1,-1,-1,1;...
+                             [1,1,1,1;1,1,-1,1;1,-1,1,1;1,-1,-1,1;...
                               -1,1,1,1;-1,1,-1,1;-1,-1,1,1;-1,-1,-1,1;...
                               1,1,1,-1;1,1,-1,-1;1,-1,1,-1;1,-1,-1,-1;...
                               -1,1,1,-1;-1,1,-1,-1;-1,-1,1,-1;-1,-1,-1,-1],... 
-                      [1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1]);
+                      eta*[1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1]);
   h_phi_training_quad(:, idx) = phi_training * w_quad(idx, :)';
   j_h_training_quad(idx) = rms(h_phi_training_quad(:, idx) - y_training);
-  % Now compare to the test
+  % Now validate
   h_phi_test_quad(:, idx) = phi_test * w_quad(idx, :)';
   j_h_test_quad(idx) = rms(h_phi_test_quad(:, idx) - y_test);
 end
