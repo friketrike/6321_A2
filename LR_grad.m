@@ -22,10 +22,10 @@ function [ w, w_inits ] = LR_grad( X, y, w_inits, num_rand_inits )
         prev_epsilon = realmax * ones(length(y),1);
         iterations = 1;
         lr = find_alpha(X, y, w(:,i));
-        while ~done && (iterations < 10000)
+        while ~done && (iterations < 20000)
             epsilon = y - (1./(1+exp(-X*w(:,i))));
             % TODO, think about cutoff strategy, observe behaviour...
-            if (abs(sum(epsilon)) < .05) || abs(sum(epsilon)-sum(prev_epsilon)) < 0.005
+            if (abs(sum(epsilon)) < .01) || abs(sum(epsilon)-sum(prev_epsilon)) < 0.001
                 done = true;
             else
                 w(:,i) = w(:,i) + lr * (X'*epsilon);
