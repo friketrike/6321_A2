@@ -12,7 +12,7 @@ folds_idx = randperm(length(y));
 
 num_rand_inits = 24;
 
-features = [1:33];
+features = 1:33;
 % features = [1,33];
 
 w_grad = zeros(num_folds, length(features), num_rand_inits);
@@ -51,8 +51,8 @@ for fold = 1:num_folds
     plot(p1, 'g'); 
     hold on; 
     plot(p0, 'r'); 
-    plot(y_test.*max(p0), 'k*')
-    plot((log_odds > 0)*max(p0), 'o')
+    plot(y_test.*max(max(p0), max(p1)), 'k*')
+    plot((log_odds > 0)*max(max(p0), max(p1)), 'o')
     title(['Class and GNB class prediction for fold ', num2str(fold)]);
     xlabel('instances of x');
     legend('P(y = 1|X)', 'P(y = 0|X)', 'y', 'y\^', 'location', 'east');

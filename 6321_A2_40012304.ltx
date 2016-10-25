@@ -172,8 +172,8 @@ end
 
 % ----------------------------- c ---------------------------
 \subsection{Plot $L1$ $RMS$ and coefficients, $w$ against $\lambda$ and comment}
-Although it is not exactly equivalent, we shall simplify the comparison of $L1$ and $L2$ by using 
-$\lambda \approx \frac{1}{\eta}$ Throughout this section as it gives a clearer idea.
+Although it is not exactly equivalent, we shall simplify the comparison of $L1$ and $L2$ 
+throughout this section by using $\lambda \approx \frac{1}{\eta}$ as it gives a clearer idea.
 In Figure \ref{fig:rms-lambda-l1}, we can again notice how the test error slightly decreases for 
 the lowest values of $\approx \lambda$ and then monotonically increases as the coefficients are 
 all forced towards 0. We also note that $L1$ yields a lower minimum error (1.0098) than $L2$ 
@@ -202,8 +202,6 @@ ans =
 \end{lstlisting}
 which reveals that the correlation between $\Phi_{:,1}$ and $y$ is much larger than between other columns of $\Phi$ and $y$.
 
-TODO change indexing from 1-based to 0-based
-
 \begin{figure}[H]
 \begin{center}
 	\includegraphics[width=4in, trim=1in 3in 1in 3in]{w_lambda_L1}
@@ -224,12 +222,12 @@ We turn our attention to the numerator of the exponent, which can also be writte
 \begin{equation}
 \sum\limits_{i=1}^{n}[(x_i-\mu_{c,i}\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{c,j}) ]
 \end{equation}
-This expression becomes $0$ . Thus we can write:
+For the value of a given feature $n$, replaced by its class-conditional mean, $\mu_{c,n}$, this expression becomes $0$; we further develop this by analyzing the log-odds:
 \begin{equation}
 log\frac{P(y=1|x)}{P(y=0|x)} = log\frac{P(y=1)}{P(y=0)}+ log\frac{\frac{1}{\sqrt{2\pi |\bm{\Sigma}|}}e^{-\frac{1}{2} (\bm{x}-\bm{\mu_1})^T \bm{\Sigma}^{-1} (\bm{x}-\bm{\mu_1})}}
 {\frac{1}{\sqrt{2\pi |\bm{\Sigma}|}}e^{-\frac{1}{2} (\bm{x}-\bm{\mu_0})^T \bm{\Sigma}^{-1} (\bm{x}-\bm{\mu_0})} }
 \end{equation}
-But since the matrix sigma is shared, we can then write:
+Since the matrix sigma is shared, we can write:
 \begin{equation}
 log\frac{P(y=1|x)}{P(y=0|x)} = log\frac{P(y=1)}{P(y=0)}+
  log\frac{
@@ -249,9 +247,11 @@ log\frac{P(y=1|x)}{P(y=0|x)} = log\frac{P(y=1)}{P(y=0)}+
 -\frac{1}{2}\sum\limits_{i=1}^{n}[(x_i-\mu_{c,i}\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{c,j}) ])
 }
 \end{equation}
-Where we can clearly see that the contribution of $x_n$ does not change the ratio of the log-odds given by all other features, since we have choosen $x_n = \mu_{c,n}$ for $c \in {0,1}$ where $\mu_{c,n}$ is the class-conditional means for class $c$
+Where we can clearly see that the contribution of $x_n$ does not change the ratio of the log-odds given by all other features, since we have choosen $x_n = \mu_{c,n}$ for $c \in \{0,1\}$ where $\mu_{c,n}$ is the class-conditional means for class $c$
+
 %------------------------------------------- Q 3 ----------------------------------------------------
 \section{Naive Bayes assumption, suppose a feature gets repeated in the model}
+
 
 
 \end{document}

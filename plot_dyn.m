@@ -1,6 +1,6 @@
-f3h = figure(3)
+f3h = figure(3);
 set(f3h, 'Position',[10 200 480 480]);
-f4h = figure(4)
+f4h = figure(4);
 set(f4h, 'Position',[560 200 480 480]);
 for i = 1:32
     figure(3)

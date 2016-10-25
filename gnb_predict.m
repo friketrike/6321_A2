@@ -3,8 +3,10 @@ function [log_odds, p_x_y_1, p_x_y_0] = ...
                 gnb_predict(X, theta, mu_1, mu_0, Sigma)
     m = size(X, 1);
     n = size(X, 2);
+    % %Assume independence and force Sigma to be independent
+    % Sigma = Sigma.*eye(length(Sigma));
     Sigma_inv = pinv(Sigma);
-    norm_term = 1/((2*pi)^(n/2)*sqrt(trace(Sigma)));
+    norm_term = 1/((2*pi)^(n/2)*sqrt(det(Sigma)));
     X_to_mu_1 = (X - repmat(mu_1, m, 1));
     X_to_mu_0 = (X - repmat(mu_0, m, 1));
     % essentially, running (x_i - mu_c)^{T} * Sigma^{-1} * (x_i - mu_c)
