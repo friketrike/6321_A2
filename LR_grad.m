@@ -7,11 +7,9 @@ function [ w, w_inits ] = LR_grad( X, y, w_inits, num_rand_inits )
        num_rand_inits = 4; 
     end
 
-    % if no random starting points are 
+    % if no random starting points are given, make some
     if nargin < 3 || isempty(w_inits)
-        w_inits = 10*rand(size(X,2), num_rand_inits); 
-        %TODO, see how far apart these random points should be
-        w_inits(:,1) = 0; % TODO remove...
+        w_inits = rand(size(X,2), num_rand_inits); 
     else
         num_rand_inits = size(w_inits(2));
     end
@@ -24,8 +22,8 @@ function [ w, w_inits ] = LR_grad( X, y, w_inits, num_rand_inits )
         lr = find_alpha(X, y, w(:,i));
         while ~done && (iterations < 20000)
             epsilon = y - (1./(1+exp(-X*w(:,i))));
-            % TODO, think about cutoff strategy, observe behaviour...
-            if (abs(sum(epsilon)) < .01) || abs(sum(epsilon)-sum(prev_epsilon)) < 0.001
+            if (abs(sum(epsilon)) < .01) ...
+                    || abs(sum(epsilon)-sum(prev_epsilon)) < 0.001
                 done = true;
             else
                 w(:,i) = w(:,i) + lr * (X'*epsilon);

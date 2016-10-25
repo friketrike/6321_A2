@@ -12,14 +12,13 @@ folds_idx = randperm(length(y));
 
 num_rand_inits = 24;
 
+% Alternate between these two lines in order to run question 5b or 5c
 features = 1:33;
 % features = [1,33];
 
 w_grad = zeros(num_folds, length(features), num_rand_inits);
 errors_grad = zeros(num_folds, num_rand_inits);
 errors_gnb = zeros(num_folds,1);
-
-% TODO perform cross-validation for 1 feature then all
 
 for fold = 1:num_folds
     disp(sprintf('Performing %d-fold CV, fold: %d', num_folds, fold));
@@ -45,7 +44,7 @@ for fold = 1:num_folds
     % the mean...
     X_train(:,end) = [];
     X_test(:,end) = [];
-    [theta, mu_1, mu_0, Sigma] = gnb_train(X_train,y_train);
+    [theta, mu_1, mu_0, Sigma] = gnb_train(X_train,y_train); 
     [log_odds, p1, p0] = gnb_predict(X_test, theta, mu_1, mu_0, Sigma);
     figure(1);
     plot(p1, 'g'); 
@@ -55,7 +54,7 @@ for fold = 1:num_folds
     plot((log_odds > 0)*max(max(p0), max(p1)), 'o')
     title(['Class and GNB class prediction for fold ', num2str(fold)]);
     xlabel('instances of x');
-    legend('P(y = 1|X)', 'P(y = 0|X)', 'y', 'y\^', 'location', 'east');
+    legend('P(x|y = 1)', 'P(x|y = 0)', 'y', 'y\^', 'location', 'east');
     hold off
     pause(0.5);
     errors_gnb(fold) = sum(((log_odds > 0) ~= y_test));
