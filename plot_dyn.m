@@ -1,3 +1,9 @@
+% COMP 6321 Machine Learning, Fall 2016
+% Federico O'Reilly Regueiro - 40012304
+% Assignment 2, due October 26
+
+% helper script to visualize the data. X and y must already be loaded
+
 f3h = figure(3);
 set(f3h, 'Position',[10 200 480 480]);
 f4h = figure(4);

@@ -1,3 +1,6 @@
+% COMP 6321 Machine Learning, Fall 2016
+% Federico O'Reilly Regueiro - 40012304
+% Assignment 2, due October 26
 
 function [theta, mu_1, mu_0, Sigma] = gnb_train(X, y)
 %% [theta, mu_1, mu_0, Sigma] = gnb_train(X, y)

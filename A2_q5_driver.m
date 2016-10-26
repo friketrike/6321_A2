@@ -1,4 +1,6 @@
-
+% COMP 6321 Machine Learning, Fall 2016
+% Federico O'Reilly Regueiro - 40012304
+% Assignment 2, due October 26
 
 % get data...
 X = load('wpbcx.dat');

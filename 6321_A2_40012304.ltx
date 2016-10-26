@@ -206,7 +206,7 @@ is supported by the following output:
     ans =
       -0.848189  -0.017339  -0.024943
 \end{lstlisting}
-which reveals that the correlation between $\Phi_{:,1}$ and $y$ is much larger than between other columns of $\Phi$ and $y$.
+which reveals that the cross-correlation between $\Phi_{:,1}$ and $y$ is much larger than between other columns of $\Phi$ and $y$.
 
 \begin{figure}[H]
 \begin{center}
@@ -253,10 +253,48 @@ Then we expand the exponent:
     -\frac{1}{2}\sum\limits_{i=1}^{n}[(x_i-\mu_{0,i})\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{0,j}) ])
 }
 \end{equation}
-Where we can clearly see that the contribution of $x_n$ does not change the ratio of the log-odds given by all other features, since we have choosen $x_n = \mu_{c,n}$ for $c \in \{0,1\}$ where $\mu_{c,n}$ is the class-conditional means for class $c$
+Where we can clearly see that the contribution of $x_n$ does not change the ratio of the log-odds given by all other 
+features, since we have choosen $x_n = \mu_{c,n}$ for $c \in \{0,1\}$ where $\mu_{c,n}$ is the class-conditional means for class $c$
 
 %------------------------------------------- Q 3 ----------------------------------------------------
 \section{Naive Bayes assumption, suppose a feature gets repeated in the model}
+\subsection{how many parameters are there before and after}
+The initial model has five parameters, $\Theta_1, \Theta_{1,1}, \Theta_{0,1}, \Theta_{1,2}$ and $\Theta_{0,2}$. After
+ duplication, we could think that we have seven parameters,
+the previous five and $\Theta_{1,3}, \Theta_{0,3}$, however since our third feature is a duplicate of the second, 
+$\Theta_{1,3}, \Theta_{0,3}$ will behave exactly like $\Theta_{1,2}, \Theta_{0,2}$ and thus we still only 
+have five parameters.
+
+\subsection{What effect does this have on the decision boundary?}
+
+The decision boundary is given by:
+\begin{equation}
+\begin{aligned}
+	w_0 + \sum\limits_{i = 1 }^{3}w_{i0} &+ \sum\limits_{i = 1 }^{3}(w_{i1} - w_{i0})x_i\\
+			&\mbox{where}\\
+		w_0 &= log\left(\frac{\Theta_1}{\Theta_0}\right) \\
+		w_{i1} &= log\left(\frac{\Theta_{i1}}{\Theta_{i0}}\right) \\
+		w_{i0} &= log\left(\frac{1-\Theta_{i1}}{1-\Theta_{i0}}\right) \\
+		\Theta_{c} &= P(y = c)\\
+		\Theta_{ic} &= P(x_i = c  | y = c)
+\end{aligned}
+\end{equation}
+Therefore and since feature 3 is a duplicate of feature 2, we could re-write the resulting boundary as:
+\begin{equation}
+	w_0 + w_{10} + 2w_{20}+ (w_{11} - w_{10})x_1 + 2(w_{21} - w_{20})x_2
+\end{equation}
+Which resembles the boundary for the two-feature case but with a modified slope and bias, since feature
+2 is weighted more than feature 1. 
+
+Since the inputs are binary, observations may only fall in one of four points on the plane\footnote{[0,0],[0,1],[1,0] and [1,1]}. 
+Therefore, the worst effects of modifying the slope and bias can be felt when the boundary passes close to any one of these 
+corners\footnote{e.g. a boundary with a slope slightly less than one with a negligeble bias term would misclassify examples falling in the
+corner [1,1].}.
+The effects are also amplified if the information gain is higher for feature 2 than it is for feature 1, since the changes in the slope and bias 
+will be more pronounced than if the feature 2's contribution were small compared to the class marginals-ie $P(y = c)$-and to the contribution 
+of feature 1.
+
+Therefore, and because the sample space has strict constraints, we can say that Naive Bayes is fairly robust.
 
 %------------------------------------------ Q 4 ----------------------------------------------------
 \section{If only anything like this had been touched-upon in class...}
@@ -335,7 +373,9 @@ classification.
 \end{center}
 \end{figure}
 
-\subsection{Logistic rergession}
+
+%------------------------- a ---------------------------------
+\subsection{Logistic rergession - gradient descent}
 For logistic regression, we chose to carry out a gradient descent implementation. 
 The implementation is contained in the \texttt{LR\textunderscore grad.m} function file with an auxiliary 
 \texttt{find\textunderscore alpha.m} function file. 
@@ -388,7 +428,7 @@ after all iterations of gradient descent should be done.
   end
 \end{lstlisting}
 
-For each initial vector, an optimal learning rate is chosen from $[\frac{1}{1}, \frac{1}{2}, \hdots, \frac{1}{10}]$.
+For each initial vector, an optimal learning rate is chosen from $\{\frac{1}{1}, \frac{1}{2}, \hdots, \frac{1}{10}\}$.
 The learning rates were left fixed, as implementing the Robbins-Monro conditions lead to a substantial degradation
 in performance - speedwise. The rationale to support this choice being that as the gradient approaches $0$, the update
 to the $\bm{w}$  vector will inherently be smaller.
@@ -480,6 +520,8 @@ reasons for having several random starting vectors.}:
 	min_err = min(abs(mean(errors_grad, 1)))}
 \end{lstlisting}
 
+
+%-------------------- b ---------------------
 \subsection{Implementation of GNB classifier}\label{gnb}
 In order to setup our GNB algorithm, we separated the necessary actions into \texttt{gnb\textunderscore train.m} and
 \texttt{gnb\textunderscore predict.m}
@@ -502,11 +544,15 @@ The contents of \texttt{gnb\textunderscore train.m}:
   end
 \end{lstlisting}
 
-And the contents of \texttt{gnb\textunderscore predict.m}:
+We call the readers attention to the fact that the estimated covariance matrix is shared between classes and can be
+estimated with the last three commands of the function, as per the class notes, lecture 3, slide 31, effectively merging
+the covariance matrices of both classes.
+
+The contents of \texttt{gnb\textunderscore predict.m}:
 
 \begin{lstlisting}
   function [log_odds, p_x_y_1, p_x_y_0] = ...
-                  gnb_predict(X, theta, mu_1, mu_0, Sigma)
+              gnb_predict(X, theta, mu_1, mu_0, Sigma)
       m = size(X, 1);
       n = size(X, 2);
       Sigma_inv = pinv(Sigma);
@@ -528,6 +574,50 @@ And the contents of \texttt{gnb\textunderscore predict.m}:
   end
 \end{lstlisting}
 
+We call the attention to the reader to the use of \texttt{ alpha\textunderscore 1 = $\hdots$ .* eye(m)) * ones(m,1);}. We prefer
+this to a per-observation loop since we are using a matrix-operation-optimized software, this yields an equivalent result to 
+performing a prediction for each observation $i$, within a for loop; in the later case, 
+$(\bm{x_i} - \bm{\mu_c})^T \bm{\Sigma} ^{-1} (\bm{x_i} - \bm{\mu_c})$ the result is a scalar. However, 
+each $i^{th}$ scalar from the previous expression is contained in the $i^{th}$ diagonal entry of the matrix obtained from 
+$(\bm{X} - \bm{\mu_c})^T \bm{\Sigma} ^{-1} (\bm{X} - \bm{\mu_c})$.
 
+Suffice it to change the line: \texttt{features = 1:33;} to \texttt{features = [1,33];} in order to run a comparison of logistic regression
+vs GNB over a single feature. We then add the following code within the \texttt{folds} loop:
+\begin{lstlisting}
+	...
+    % remove the column of ones, GNB needs no bias as it's 
+    % already centered around the mean...
+    X_train(:,end) = [];
+    X_test(:,end) = [];
+    [theta, mu_1, mu_0, Sigma] = gnb_train(X_train,y_train); 
+    [log_odds, p1, p0] = 
+    		gnb_predict(X_test, theta, mu_1, mu_0, Sigma);
+	...
+\end{lstlisting}
+For logistic regression with gradient descent, using only the first feature of the data-set, the average misclassification rate is about 4.8 per fold,
+depending on the random permutations from which the folds were constructed.  GNB performs only slightly better, typically yielding about 4.6
+misclassifications per fold.
+
+We recall from the end of the section regarding our data, that if we chose to always classify as class 0, we should err 46 times out of 194. If 
+our classifier is misclassifying 4.6 samples per fold and we are doing 10-fold classification it's squarely at the same rate as always choosing class 0.
+Still, however, GNB slightly outperforms our logistic regression almost systematically.
+
+%------------------------------------- c ----------------------
+\subsection{Compare Logistic regression and GNB over the whole feature-set}
+In order to classify over the whole feature-set, \texttt{features = [1,33];} needs to be changed back to \texttt{features = 1:33;}. The accuracy 
+of logistic regression falls slightly to an average rate of misclassification of around 5.6 per-fold while GNB continues to misclassify about 4.6 times
+per-fold on average. However many times we run the routine, GNB systematically outperforms logistic regression. 
+
+The error rate is still on par with arbitrarily always choosing class 0, however GNB actually does choose class 1 sometimes as we can see in figure 
+\ref{5-gnb}. Yet it does end up choosing class 0 fairly often, as one would expect given the $log\frac{P( y = 1)}{P(y = 0)}$ term of the 
+log-odds equation\footnote{Which in this case is roughly -0.5 }.
+
+\begin{figure}[H]
+\begin{center}
+	\includegraphics[width=4in, trim=1in 3in 1in 3in]{5-gnb}
+    \caption{Data and predictions per instance. There is clearly a scaling issue with  $P(x|y=c)$ for $c \in {0,1}$, however all wee need is the ratio between 
+    $P(x|y=1)$ and $P(x|y=0)$. Note that instance observation 5 has been correctly classified as class 1.}\label{5-gnb}
+\end{center}
+\end{figure}
 
 \end{document}

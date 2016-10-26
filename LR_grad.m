@@ -1,3 +1,7 @@
+% COMP 6321 Machine Learning, Fall 2016
+% Federico O'Reilly Regueiro - 40012304
+% Assignment 2, due October 26
+
 function [w, w_inits ] = LR_grad( X, y, w_inits, num_rand_inits )
 %% [w, w_inits ] = LR_grad( X, y, w_inits, num_rand_inits )
 

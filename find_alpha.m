@@ -1,3 +1,7 @@
+% COMP 6321 Machine Learning, Fall 2016
+% Federico O'Reilly Regueiro - 40012304
+% Assignment 2, due October 26
+
 function alpha = find_alpha(X, y, w)
 %% alpha = find_alpha(X, y, w)
 
