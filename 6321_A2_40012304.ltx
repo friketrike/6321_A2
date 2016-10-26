@@ -220,16 +220,16 @@ P(x|y = c) = \frac{1}{\sqrt{2\pi |\bm{\Sigma}|}}e^{-\frac{1}{2} (\bm{x}-\bm{\mu_
 \end{equation}
 We turn our attention to the numerator of the exponent, which can also be written in the following manner:
 \begin{equation}
-\sum\limits_{i=1}^{n}[(x_i-\mu_{c,i}\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{c,j}) ]
+    \sum\limits_{i=1}^{n}[(x_i-\mu_{c,i})\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{c,j}) ]
 \end{equation}
 For the value of a given feature $n$, replaced by its class-conditional mean, $\mu_{c,n}$, this expression becomes $0$; we further develop this by analyzing the log-odds:
 \begin{equation}
-log\frac{P(y=1|x)}{P(y=0|x)} = log\frac{P(y=1)}{P(y=0)}+ log\frac{\frac{1}{\sqrt{2\pi |\bm{\Sigma}|}}e^{-\frac{1}{2} (\bm{x}-\bm{\mu_1})^T \bm{\Sigma}^{-1} (\bm{x}-\bm{\mu_1})}}
+    log\frac{P(y=1|\bm{x})}{P(y=0|\bm{x})} = log\frac{P(y=1)}{P(y=0)}+ log\frac{\frac{1}{\sqrt{2\pi |\bm{\Sigma}|}}e^{-\frac{1}{2} (\bm{x}-\bm{\mu_1})^T \bm{\Sigma}^{-1} (\bm{x}-\bm{\mu_1})}}
 {\frac{1}{\sqrt{2\pi |\bm{\Sigma}|}}e^{-\frac{1}{2} (\bm{x}-\bm{\mu_0})^T \bm{\Sigma}^{-1} (\bm{x}-\bm{\mu_0})} }
 \end{equation}
 Since the matrix sigma is shared, we can write:
 \begin{equation}
-log\frac{P(y=1|x)}{P(y=0|x)} = log\frac{P(y=1)}{P(y=0)}+
+    log\frac{P(y=1|\bm{x})}{P(y=0|x)} = log\frac{P(y=1)}{P(y=0)}+
  log\frac{
 -\frac{1}{2} (\bm{x}-\bm{\mu_1})^T \bm{\Sigma}^{-1} (\bm{x}-\bm{\mu_1})
 }
@@ -239,12 +239,12 @@ log\frac{P(y=1|x)}{P(y=0|x)} = log\frac{P(y=1)}{P(y=0)}+
 \end{equation}
 Then we expand the exponent:
 \begin{equation}
-log\frac{P(y=1|x)}{P(y=0|x)} = log\frac{P(y=1)}{P(y=0)}+
+    log\frac{P(y=1|\bm{x})}{P(y=0|\bm{x})} = log\frac{P(y=1)}{P(y=0)}+
  log\frac{
--\frac{1}{2}\sum\limits_{i=1}^{n}[(x_i-\mu_{c,i}\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{c,j}) ])
+     -\frac{1}{2}\sum\limits_{i=1}^{n}[(x_i-\mu_{1,i})\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{1,j}) ])
  }
 {
--\frac{1}{2}\sum\limits_{i=1}^{n}[(x_i-\mu_{c,i}\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{c,j}) ])
+    -\frac{1}{2}\sum\limits_{i=1}^{n}[(x_i-\mu_{0,i})\sum\limits_{j=1}^{n}({\Sigma^{-1}}_{i,j} (x_j-\mu_{0,j}) ])
 }
 \end{equation}
 Where we can clearly see that the contribution of $x_n$ does not change the ratio of the log-odds given by all other features, since we have choosen $x_n = \mu_{c,n}$ for $c \in \{0,1\}$ where $\mu_{c,n}$ is the class-conditional means for class $c$
@@ -257,21 +257,70 @@ Where we can clearly see that the contribution of $x_n$ does not change the rati
 
 %------------------------------------------ Q 4 ----------------------------------------------------
 \section{Implementation of Logistic Regression and Gaussian Naive-Bayes}
-\subsection*{A little bit about our data} % label something
+
+\subsection*{A little bit about our data} \label{about_data}
+
+Before plunging into the implementation task at hand, we take a look at some of the defining 
+characteristics of our data set. With this heuristic purpose in mind, a routine was created 
+to visualize some characteristics of our dataset. 
+The code is included in the \texttt{plot\textunderscore dyn.m} script.
 
 \begin{verbatim}
--  The means
-	- near-coincident class-means, and class-variances - see FIG below
-	- nicely centered around zero...
-- The validity of the naive assumption
-	- example of highly correlated pairs of features
-		-FIG `5-corr-dist' [2 vs 5 no corr, 11 vs 14, high corr (banana); 2 similar mu_c, slightly diff sigma_c, 11. similar sigma_c, slightly differing mu_c]
-	- resulting variance-covariance matrix of X
-		-FIG 5-cov-x notice the high covariances for features in the corners off the diag...
-	
-- Scaling
-
+    for = 1:32
+        figure(3)
+        plot(X(y==1, i), zeros(sum(y==1),1), 'g.')
+        hold on
+        plot(X(y==0, i), zeros(sum(y==0),1), 'r.')
+        exes = min(X(:,i))-1:0.1:max(X(:,i))+1;
+        plot(exes, normpdf(exes, mean(X(y == 1, i)), std(X(y == 1, i))), 'g')
+        plot(exes, normpdf(exes, mean(X(y == 0, i)), std(X(y == 0, i))), 'r')
+        title(['feature ', num2str(i), ' class distributions'])
+        hold off
+        for j = i+1:32
+            figure(4);
+            plot(X((y == 1),i), X((y == 1),j), 'g+');
+            hold on;
+            plot(X((y == 0),i),X((y == 0),j), 'r.');
+            hold off;
+            title(['feature ', num2str(i), ' against feature ', num2str(j)]);
+            pause(0.1)
+        end
+    end
 \end{verbatim}
+
+
+\begin{figure}[H]
+\begin{center}
+	\includegraphics[width=4in, trim=1in 3in 1in 3in]{5-corr-dist}
+    \caption{Some of the feature-pairs do not show a strong correlation (top-left), 
+        while other pairs (top-right) display a clear correlation.
+        The class-distributions for single features are fairly close in most cases 
+        (bottom).}\label{5-corr-dist}
+\end{center}
+\end{figure}
+
+Firstly, we observe in figure \ref{5-corr-dist} 
+that the class-means and class variances of each one of our features 
+are rather close, we have picked two examples of scatter-plots for feature pairs and two 
+examples for the per-feature class-distribution. 
+We can also observe that the data is nicely centered aroud 0 for all features and since the 
+variances are not too different between all features\footnote{the avid reader is urged to
+run the included \texttt{plot\textunderscore dyn.m} to cross-check this fact}, then we can safely 
+say that logistic regression would not benefit much from feature normalization.
+
+A second characteristic that becomes quickly obvious is that some features are highly correlated,
+an example of this is plainly visible in figure \ref{5-corr-dist} and we can also see this well
+represented in by the fact that the variance-covariance matrix of the inputs in figure \ref{5-cov-x}
+has large fairly values outside of the diagonal entries; this is not ideal for the naive assumption
+made by the gaussian-naive-bayes model.
+
+\begin{figure}[H]
+\begin{center}
+	\includegraphics[width=4in, trim=1in 3in 1in 3in]{5-cov-x}
+    \caption{The variance-covariance matrix of the inputs shows large values outside of the
+        diagonal entries.}\label{5-cov-x}
+\end{center}
+\end{figure}
 
 \subsection{Logistic rergession}
 Yada yada
