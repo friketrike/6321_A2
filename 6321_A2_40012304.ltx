@@ -278,8 +278,10 @@ The code is included in the \texttt{plot\textunderscore dyn.m} script.
         hold on
         plot(X(y==0, i), zeros(sum(y==0),1), 'r.')
         exes = min(X(:,i))-1:0.1:max(X(:,i))+1;
-        plot(exes, normpdf(exes, mean(X(y == 1, i)), std(X(y == 1, i))), 'g')
-        plot(exes, normpdf(exes, mean(X(y == 0, i)), std(X(y == 0, i))), 'r')
+        plot(exes, normpdf(exes, mean(X(y == 1, i)), 
+                   std(X(y == 1, i))), 'g')
+        plot(exes, normpdf(exes, mean(X(y == 0, i)), 
+                   std(X(y == 0, i))), 'r')
         title(['feature ', num2str(i), ' class distributions'])
         hold off
         for j = i+1:32
@@ -288,7 +290,8 @@ The code is included in the \texttt{plot\textunderscore dyn.m} script.
             hold on;
             plot(X((y == 0),i),X((y == 0),j), 'r.');
             hold off;
-            title(['feature ', num2str(i), ' against feature ', num2str(j)]);
+            title(['feature ', num2str(i),  
+                   'against feature ', num2str(j)]);
             pause(0.1)
         end
     end
@@ -345,9 +348,6 @@ after all iterations of gradient descent should be done.
 
 \begin{lstlisting}
   function [ w, w_inits ] =
-  		 LR_grad( X, y, w_inits, num_rand_inits )
-     %% The avid reader is urged to consult the function
-     % documentation in the included file.
   
       % default to 24 random starting points
       if nargin < 4 || isempty(num_rand_inits)
@@ -397,10 +397,6 @@ The method for finding an optimal learning rate is implemented in the function \
 
 \begin{lstlisting}
   function alpha = find_alpha(X, y, w)
-  %% For a given problem defined by X and Y
-  % as well as a starting point W for gradient 
-  % descent, this function returns an optimal
-  % learning rate from {1, 1/2, ... 1/10}.
       lrs = 1./(1:10);
       errors = zeros(1, length(lrs));
       for i = 1: length(lrs)
@@ -423,7 +419,7 @@ homogenous grouping of entries per fold\footnote{avoiding the final instance of 
 Matlab's \texttt{randperm} was also used to chose the entries randomly but without repetition for each fold.
 The following code from \texttt{A2\textunderscore q5\textunderscore driver.m} conatins the calls to 
 \texttt{LR\textunderscore grad.m}\footnote{The full version also contains calls to the naive Bayes 
-Gaussian classifier, which will appearlater on.}.
+Gaussian classifier, which will appearlater on.n section \ref{gnb}}.
 
 \begin{lstlisting}
 	...
@@ -442,19 +438,23 @@ Gaussian classifier, which will appearlater on.}.
           offset = 0;
       end
       idxs_xcl = (1:folds_info.TestSize(fold))+offset;
-      idx_after_skip = length(y)-(sum(folds_info.TestSize((fold+1):end))-1);
+      idx_after_skip = length(y) - 
+            (sum(folds_info.TestSize((fold + 1):end)) - 1);
       idxs_next = idx_after_skip:length(y);
-      X_train = X(folds_idx([idxs_prev, idxs_next]), features);
+      X_train = X(folds_idx([idxs_prev, idxs_next]), 
+                  features);
       X_test = X(folds_idx(idxs_xcl), features);
       y_train = y(folds_idx([idxs_prev, idxs_next]));
       y_test = y(folds_idx(idxs_xcl));
       
       % Here's the actual call to logistic regression
-      [w, w_init] = LR_grad(X_train, y_train, [], num_rand_inits);
+      [w, w_init] = LR_grad(X_train, y_train, [], 
+                            num_rand_inits);
       w_grad(fold, :, :) = w;
       for i=1:num_rand_inits
           errors_grad(fold, i) = 
-                  sum(y_test ~= round(1./(1+exp(-X_test*w(:,i)))));
+                  sum(y_test ~= round(1 
+                  ./ (1 + exp( - X_test*w(:,i)))));
       end
   end    
   	...
@@ -494,8 +494,10 @@ The contents of \texttt{gnb\textunderscore train.m}:
       mu_1 = mean(X(idx_1,:));
       mu_0 = mean(X(idx_0,:));
       x_to_mu = zeros(size(X));
-      x_to_mu(idx_1,:) = X(idx_1,:) - repmat(mu_1, sum(idx_1), 1);
-      x_to_mu(idx_0,:) = X(idx_0,:) - repmat(mu_1, sum(idx_0), 1);
+      x_to_mu(idx_1,:) = X(idx_1,:) 
+                         - repmat(mu_1, sum(idx_1), 1);
+      x_to_mu(idx_0,:) = X(idx_0,:) 
+                         - repmat(mu_1, sum(idx_0), 1);
       Sigma = (x_to_mu' * x_to_mu)./length(y);
   end
 \end{lstlisting}
@@ -513,13 +515,16 @@ And the contents of \texttt{gnb\textunderscore predict.m}:
       X_to_mu_0 = (X - repmat(mu_0, m, 1));
 
       alpha_1 = 
-              ((X_to_mu_1 * Sigma_inv * X_to_mu_1').*eye(m))*ones(m,1);
+              ((X_to_mu_1 * Sigma_inv * X_to_mu_1') 
+                .*eye(m)) * ones(m,1);
       alpha_0 =
-               ((X_to_mu_0 * Sigma_inv * X_to_mu_0').*eye(m))*ones(m,1);
+               ((X_to_mu_0 * Sigma_inv * X_to_mu_0')
+                .*eye(m)) * ones(m,1);
       p_x_y_1 = norm_term*exp(-alpha_1./2);
       p_x_y_0 = norm_term*exp(-alpha_0./2);
       log_odds = (alpha_0./2 - alpha_1./2) + ...
-                  repmat(log(theta/(1 - theta)), length(alpha_1), 1);
+                  repmat(log(theta/(1 - theta)), 
+                         length(alpha_1), 1);
   end
 \end{lstlisting}
 
