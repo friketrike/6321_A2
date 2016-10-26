@@ -13,8 +13,8 @@ folds_idx = randperm(length(y));
 num_rand_inits = 24;
 
 % Alternate between these two lines in order to run question 5b or 5c
-features = 1:33;
-% features = [1,33];
+% features = 1:33;
+features = [1,33];
 
 w_grad = zeros(num_folds, length(features), num_rand_inits);
 errors_grad = zeros(num_folds, num_rand_inits);
