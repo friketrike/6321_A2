@@ -1,5 +1,7 @@
 function alpha = find_alpha(X, y, w)
-%% For a given problem defined by X and Y
+%% alpha = find_alpha(X, y, w)
+
+% For a given problem defined by X and Y
 % as well as a starting point W for gradient 
 % descent, this function returns an optimal
 % learning rate from {1, 1/2, ... 1/10}.

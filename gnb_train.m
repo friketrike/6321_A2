@@ -1,5 +1,11 @@
 
 function [theta, mu_1, mu_0, Sigma] = gnb_train(X, y)
+%% [theta, mu_1, mu_0, Sigma] = gnb_train(X, y)
+
+% Returns the necessary parameters for binary classification
+% of continuous inputs, where X is the observations matrix and 
+% Y is the associated label vector.  
+
     theta = sum(y == 1)/length(y);
     idx_1 = y == 1;
     idx_0 = y == 0;

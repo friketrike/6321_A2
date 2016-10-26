@@ -1,10 +1,18 @@
 
 function [log_odds, p_x_y_1, p_x_y_0] = ...
                 gnb_predict(X, theta, mu_1, mu_0, Sigma)
+%% [log_odds, p_x_y_1, p_x_y_0] = gnb_predict(X, theta, mu_1, mu_0, Sigma)
+
+% Calculates the log-odds ratio of aseries of inputs pertaining to class
+% 0 or class 1. X is the matrix of observations and THETA, MU_1, MU_0,
+% SIGMA are the model parameters. In addition to returning the log-odds
+% ratio, it also returns the estimated joint probability of each
+% observation pertaining to class 0 or class 1 respectively.
+
+    % amount of observations
     m = size(X, 1);
+    % size of feature vector
     n = size(X, 2);
-    % %Assume independence and force Sigma to be independent
-    % Sigma = Sigma.*eye(length(Sigma));
     Sigma_inv = pinv(Sigma);
     norm_term = 1/((2*pi)^(n/2)*sqrt(det(Sigma)));
     X_to_mu_1 = (X - repmat(mu_1, m, 1));

@@ -261,7 +261,7 @@ Where we can clearly see that the contribution of $x_n$ does not change the rati
 %------------------------------------------ Q 4 ----------------------------------------------------
 \section{If only anything like this had been touched-upon in class...}
 
-%------------------------------------------ Q 4 ----------------------------------------------------
+%------------------------------------------ Q 5 ----------------------------------------------------
 \section{Implementation of Logistic Regression and Gaussian Naive-Bayes}
 
 \subsection*{A little bit about our data} \label{about_data}
@@ -319,6 +319,10 @@ an example of this is plainly visible in figure \ref{5-corr-dist} and we can als
 represented in by the fact that the variance-covariance matrix of the inputs in figure \ref{5-cov-x}
 has large fairly values outside of the diagonal entries; this is not ideal for the naive assumption
 made by the gaussian-naive-bayes model.
+
+Lastly, we note that there are 46 entries corresponding to class 1 out of 194 total entries. So if we 
+were to arbitrarily classify all of our test data as negative, we would have a 76\% rate of succesful
+classification.
 
 \begin{figure}[H]
 \begin{center}
@@ -419,7 +423,7 @@ homogenous grouping of entries per fold\footnote{avoiding the final instance of 
 Matlab's \texttt{randperm} was also used to chose the entries randomly but without repetition for each fold.
 The following code from \texttt{A2\textunderscore q5\textunderscore driver.m} conatins the calls to 
 \texttt{LR\textunderscore grad.m}\footnote{The full version also contains calls to the naive Bayes 
-Gaussian classifier, which will appear in section \ref{gnb}.}.
+Gaussian classifier, which will appearlater on.}.
 
 \begin{lstlisting}
 	...
@@ -477,6 +481,48 @@ reasons for having several random starting vectors.}:
 \end{lstlisting}
 
 \subsection{Implementation of GNB classifier}\label{gnb}
+In order to setup our GNB algorithm, we separated the necessary actions into \texttt{gnb\textunderscore train.m} and
+\texttt{gnb\textunderscore predict.m}
+
+The contents of \texttt{gnb\textunderscore train.m}:
+
+\begin{lstlisting}
+  function [theta, mu_1, mu_0, Sigma] = gnb_train(X, y)
+      theta = sum(y == 1)/length(y);
+      idx_1 = y == 1;
+      idx_0 = y == 0;
+      mu_1 = mean(X(idx_1,:));
+      mu_0 = mean(X(idx_0,:));
+      x_to_mu = zeros(size(X));
+      x_to_mu(idx_1,:) = X(idx_1,:) - repmat(mu_1, sum(idx_1), 1);
+      x_to_mu(idx_0,:) = X(idx_0,:) - repmat(mu_1, sum(idx_0), 1);
+      Sigma = (x_to_mu' * x_to_mu)./length(y);
+  end
+\end{lstlisting}
+
+And the contents of \texttt{gnb\textunderscore predict.m}:
+
+\begin{lstlisting}
+  function [log_odds, p_x_y_1, p_x_y_0] = ...
+                  gnb_predict(X, theta, mu_1, mu_0, Sigma)
+      m = size(X, 1);
+      n = size(X, 2);
+      Sigma_inv = pinv(Sigma);
+      norm_term = 1/((2*pi)^(n/2)*sqrt(det(Sigma)));
+      X_to_mu_1 = (X - repmat(mu_1, m, 1));
+      X_to_mu_0 = (X - repmat(mu_0, m, 1));
+
+      alpha_1 = 
+              ((X_to_mu_1 * Sigma_inv * X_to_mu_1').*eye(m))*ones(m,1);
+      alpha_0 =
+               ((X_to_mu_0 * Sigma_inv * X_to_mu_0').*eye(m))*ones(m,1);
+      p_x_y_1 = norm_term*exp(-alpha_1./2);
+      p_x_y_0 = norm_term*exp(-alpha_0./2);
+      log_odds = (alpha_0./2 - alpha_1./2) + ...
+                  repmat(log(theta/(1 - theta)), length(alpha_1), 1);
+  end
+\end{lstlisting}
+
 
 
 \end{document}

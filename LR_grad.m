@@ -1,5 +1,7 @@
-function [ w, w_inits ] = LR_grad( X, y, w_inits, num_rand_inits )
-%% Takes X, a matrix with all the input data, one instance per
+function [w, w_inits ] = LR_grad( X, y, w_inits, num_rand_inits )
+%% [w, w_inits ] = LR_grad( X, y, w_inits, num_rand_inits )
+
+% Takes X, a matrix with all the input data, one instance per
 % row, including a column of ones for the bias term; Y, the class
 % labels in a column vector; W_INITS is an optional matrix of random 
 % initial weight vectors where each vector is a column of the matrix;
