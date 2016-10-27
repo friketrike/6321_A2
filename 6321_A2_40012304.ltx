@@ -35,7 +35,7 @@
 \begin{document}
 \title{Comp 6321 - Machine Learning - Assignment 2}
 \author{Federico O'Reilly Regueiro}
-\date{October 18th, 2016}
+\date{October 26th, 2016}
 \maketitle
 
 %------------------------ Q1 ------------------------%
@@ -44,7 +44,7 @@
 \subsection{Partition the data into training / testing, 90 to 10 and perform and plot $L2$ regularization}
 The data was partitioned pseudo-randomly\footnote{I have included the permutation indexes yielded by 
 matlab for the instance of the 90 / 10 partition from which the plots and values were drawn. Suffice it to 
-uncomment two lines and comment-out two others in order to partition the data randomly, 
+uncomment two lines and comment-out two others in order to partition the data pseudo-randomly, 
 yet similar results (at different scales of $\lambda$) can be observed.}.
 
 \begin{lstlisting}
@@ -67,6 +67,7 @@ Next, a range of lambdas was chosen, going from 0 to almost 125000 in order to g
 and the coefficients. The former was plotted for a range of small values as well as along the whole set of lambdas %TODO check if this is worth it, then implement if so
  for which the $RMS$ error was calculated. Two plots were done in order to allow us to see the behaviour of the test and training errors
   for lower values of $\lambda$ as well as the overall trend of the $RMS$ the resulting plot can be seen in Figure \ref{fig:rms-w-lambda-l2}.
+\clearpage
 
 \begin{lstlisting}
 	lambdas = 0:0.1:50;
@@ -97,7 +98,8 @@ and the coefficients. The former was plotted for a range of small values as well
 \caption{Plot of the RMS training and testing error as well as the coefficients over a wide range of $\lambda$.}\label{fig:rms-w-lambda-l2}%      only if needed  
 \end{center}
 \end{figure}
-On the top-left plot of figure \ref{fig:rms-w-lambda-l2} can observe that as expected, the test error goes down as $\lambda$ grows. Howerver, as $\lambda$ continues to increase, the test error closely follows the training error as they both grow since the restrictions on the coefficients make for a worse fit at a certain point.
+\clearpage
+On the top-left plot of figure \ref{fig:rms-w-lambda-l2}, as expected, it can be noted that the test error goes down as $\lambda$ grows. Howerver, as $\lambda$ continues to increase, the test error closely follows the training error as they both grow since the restrictions on the coefficients make for a worse fit at a certain point.
 
 %------------------------------------- b ------------------------------------------ %
 \subsection{Use the \texttt{quadprog} function in Matlab for $L1$ regularization}
@@ -136,14 +138,14 @@ $\bm{Ax} \leq \bm{b}$.
 We can thus take \texttt{H :=} $2\bm{\Phi}^T\bm{\Phi}$, 
 then \texttt{f :=} $-2\bm{y}^T\bm{\Phi}$, 
 \texttt{A :=}$\bm{P}$, where for a system with $n$  variables, 
-$\eta \bm{P}$ is the matrix with $2^n$ permutations of $[b_1, b_2, \ldots b_n], b \in \{-1, 1\}$ 
-and lastly \texttt{b :=} $c\bm{\stackrel{\rightarrow}{1}}$, 
+$\bm{P}$ is the matrix with $2^n$ permutations of $[b_1, b_2, \ldots b_n], b \in \{-1, 1\}$ 
+and lastly \texttt{b :=} $\eta\bm{\stackrel{\rightarrow}{1}}$, 
 where$\bm{\stackrel{\rightarrow}{1}}$ is an all-one vector of length $2^n$ that places an upper bound, 
 $\eta$, to the expression 
 $\sum_{k=0}^{K-1}|w_k|$, such that $\sum_{k=0}^{K-1}|w_k| \leq \eta$.
 We note that $\eta$ is roughly equivalent to $\frac{1}{\lambda}$ which we use so that we may compare the 
 effects of $L1$ and $L2$ regularizations on a similar range of values.
-
+\newpage
 Thus we end up with the following code:
 \begin{lstlisting}
   etas = 1./lambdas;
@@ -153,15 +155,15 @@ Thus we end up with the following code:
         quadprog(
             2*(phi_train'*phi_train), ...
            -2*(phi_train'*y_train), ...
-                [ 1, 1, 1, 1;   1, 1,-1, 1; ...
-                   1,-1, 1, 1;   1,-1,-1, 1; ...
-                  -1, 1, 1, 1;  -1, 1,-1, 1; ...
-                   1,-1, 1, 1;  -1,-1,-1, 1; ... 
-                   1, 1, 1, -1;   1, 1,-1, -1; ...
-                   1,-1, 1, -1;   1,-1,-1, -1; ...
-                  -1, 1, 1, -1;  -1, 1,-1, -1; ...
-                   1,-1, 1, -1;  -1,-1,-1, -1], ... 
-            eta * [1; 1; 1; 1; 1; 1; 1; 1]);
+                 [ 1, 1, 1, 1;  1, 1,-1, 1; ...
+                   1,-1, 1, 1;  1,-1,-1, 1; ...
+                  -1, 1, 1, 1; -1, 1,-1, 1; ...
+                   1,-1, 1, 1; -1,-1,-1, 1; ... 
+                   1, 1, 1,-1;  1, 1,-1,-1; ...
+                   1,-1, 1,-1;  1,-1,-1,-1; ...
+                  -1, 1, 1,-1; -1, 1,-1,-1; ...
+                   1,-1, 1,-1; -1,-1,-1,-1], ... 
+            eta * [1; 1; 1;-1;  1; 1; 1; 1]);
 
     h_phi_train_quad(:, idx) = 
                 phi_train * w_quad(idx, :)';
@@ -218,8 +220,8 @@ which reveals that the cross-correlation between $\Phi_{:,1}$ and $y$ is much la
 
 % -------------------------------------------- Q 2 ------------------------------------------------
 \section{Dealing with missing data, fill in $x_{i,n}$ with class-conditional means?}
-First, we write $\mu_{c,i}$ to represent $E(x_i| y = c)$ and we assume independence between features. Then,
-since our classifier is Gaussian, we know that $P(x|y=1)$ and $P(x|y=0)$ are modelled as follows:
+First, we write $\mu_{c,i}$ to represent ${E(x_i| y = c)}$ and we assume independence between features. Then,
+since our classifier is Gaussian, we know that ${P(x|y=1)}$ and ${P(x|y=0)}$ are modelled as follows:
 
 \begin{equation}
 P(x|y = c) = \frac{1}{\sqrt{2\pi |\bm{\Sigma}|}}e^{-\frac{1}{2} (\bm{x}-\bm{\mu_c})^T \bm{\Sigma}^{-1} (\bm{x}-\bm{\mu_c}), \quad c \in \{0,1\}} 
@@ -283,21 +285,164 @@ Therefore and since feature 3 is a duplicate of feature 2, we could re-write the
 \begin{equation}
 	w_0 + w_{10} + 2w_{20}+ (w_{11} - w_{10})x_1 + 2(w_{21} - w_{20})x_2
 \end{equation}
-Which resembles the boundary for the two-feature case but with a modified slope and bias, since feature
-2 is weighted more than feature 1. 
+The preceding expression is similar to the boundary for the two-feature case but with a 
+modified slope and bias, due to the weighting imposed on feature 2. 
 
-Since the inputs are binary, observations may only fall in one of four points on the plane\footnote{[0,0],[0,1],[1,0] and [1,1]}. 
+The greatest discrepancies for classification between the original 
+model and the duplicate-feature model will occur when ${\Theta_{20} >> \Theta_{21}}$ or
+${\Theta_{20} << \Theta_{21}}$.
+
+Additionally, since the inputs are binary, observations may only fall in one of four points on the 
+plane\footnote{[0,0],[0,1],[1,0] and [1,1]}. 
 Therefore, the worst effects of modifying the slope and bias can be felt when the boundary passes close to any one of these 
 corners\footnote{e.g. a boundary with a slope slightly less than one with a negligeble bias term would misclassify examples falling in the
 corner [1,1].}.
-The effects are also amplified if the information gain is higher for feature 2 than it is for feature 1, since the changes in the slope and bias 
-will be more pronounced than if the feature 2's contribution were small compared to the class marginals-ie $P(y = c)$-and to the contribution 
-of feature 1.
 
 Therefore, and because the sample space has strict constraints, we can say that Naive Bayes is fairly robust.
 
 %------------------------------------------ Q 4 ----------------------------------------------------
-\section{If only anything like this had been touched-upon in class...}
+\section{Prove that for a gamma-normal prior and a normal distribution, the posterior will be gamma-normal, what are the parameters?}
+\subsection{Do so for the univariate case}
+Our prior distribution is given by:
+\begin{equation}
+\begin{aligned}
+    \Pi(\mu, \lambda | \mu_0, \beta, a, b) &\equiv \Pi_{1}(\mu | \mu_0, (\beta \lambda)^{-1}) \Pi_2(\lambda | a, b)\\
+                                           & = \mathcal(N)(\mu | \mu_0, (\beta \lambda)^{-1}) Gam(\lambda | a, b)\\
+                                           & = \left(\frac{\beta\lambda}{2\pi}\right)^{\frac{1}{2}}
+                                                exp{\left\{-\frac{\beta\lambda}{2}(x_n-\mu)^{\frac{1}{2}}\right\}}
+                                                \frac{1}{\Gamma(a)}\lambda^{a-1}b^{a}exp{\left\{-b\lambda\right\}}
+\end{aligned}
+\end{equation}
+We know that our observations have a normal distribution consisting of N i.i.d. observations, 
+so the likelihood $P(X|\mu, \lambda^{-1})$ can be expressed as a product:
+\begin{equation}
+    \prod\limits_{n=1}^{N}\left(\frac{\lambda}{2\pi}\right)^{\frac{1}{2}}
+            exp\left\{-\frac{\lambda}{2}(x_n-\mu)^2\right\}
+\end{equation}
+The posterior is a product of the likelihood and the prior distribution. Thus the posterior can be expressed as:
+\begin{equation*} 
+    \begin{aligned}
+        \prod\limits_{n=1}^{N}\left[\left(\frac{\lambda}{2\pi}\right)^{\frac{1}{2}}
+            exp\left\{-\frac{\lambda}{2}(x_n-\mu)^2\right\}\right]
+            & \left(\frac{\beta\lambda}{2\pi}\right)^{\frac{1}{2}}
+            exp{\left\{-\frac{\beta\lambda}{2}(\mu - \mu_0)^{2}\right\}}\\
+            \cdot & \frac{1}{\Gamma(a)}\lambda^{a-1}b^{a}exp{\left\{-b\lambda\right\}}
+         \end{aligned}
+\end{equation*}
+We absorb constant values not depending on $\mu$, $\lambda$ or $\beta$ 
+into a constant $k$ and the previous product can equivalently be written as:
+
+\begin{equation*} 
+        k \prod\limits_{n=1}^{N}\left[\lambda^{\frac{1}{2}}
+            exp\left\{-\frac{\lambda}{2}(x_n-\mu)^2\right\}\right]
+            \beta\lambda^{\frac{1}{2}}
+            exp{\left\{-\frac{\beta\lambda}{2}(\mu - \mu_0)^{2}\right\}}
+              \lambda^{a-1}exp{\left\{-b\lambda\right\}}
+\end{equation*}
+
+We further develop this:
+
+\begin{equation*} 
+    \begin{aligned}
+        & k \lambda^{a_0-1+\frac{N+1}{2}}\beta^{\frac{1}{2}}             
+            exp\left\{-\frac{\lambda}{2}
+                  \sum\limits_{n=1}^{N}\left[(x_n-\mu)^2\right]\right\}
+            exp{\left\{-\frac{\beta\lambda}{2}(\mu - \mu_0)^{2}\right\}}
+              exp{\left\{-b\lambda\right\}}\\
+        = & k \lambda^{a_0-1+\frac{N+1}{2}}\beta^{\frac{1}{2}}            
+            exp\left\{-\frac{\lambda}{2}
+                  \sum\limits_{n=1}^{N}\left[(x_n-\mu)^2\right]
+                  -\frac{\beta\lambda}{2}(\mu - \mu_0)^{2} - b\lambda\right\}
+    \end{aligned}
+\end{equation*}
+Since we can expand:
+\begin{equation*} 
+    \begin{aligned}
+        \sum\limits_{n=1}^{N}(x_n-\mu)^2\\
+        = & \sum\limits_{n=1}^{N}(x_n-\bar{x}+\bar{x}-\mu)^2\\
+        = & \sum\limits_{n=1}^{N}((x_n-\bar{x})-(\mu-\bar{x}))^2\\
+        = & \sum\limits_{n=1}^{N}(x_n-\bar{x})^2 -2(x_n-\bar{x})(\mu-\bar{x})+ (\mu-\bar{x})^2\\
+          & \mbox{and since}   \sum\limits_{n=1}^{N}(x_n-\bar{x}) = 0\\
+        = & \sum\limits_{n=1}^{N}(x_n-\bar{x})^2 + (\mu-\bar{x})^2\\
+    \end{aligned}
+\end{equation*}
+Then we can arrive at:
+\begin{equation} \label{a-result}
+    \begin{aligned}
+        k \lambda^{a_0-1+\frac{N+1}{2}}\beta^{\frac{1}{2}}             
+             exp\left\{-\frac{\lambda}{2}\left[
+                \sum\limits_{n=1}^{N}\left[(x_n-\bar{x})^2\right]
+                +N(\mu + \bar{x})^{2}+\beta(\mu - \mu_0)^{2}\right] 
+              - b\lambda\right\}
+    \end{aligned}
+\end{equation}
+
+Firstly, we notice that:
+\begin{equation}
+    \sum\limits_{n=1}^{N}\left[(x_n-\bar{x})^2\right] = \frac{N}{\lambda_{d}}
+\end{equation}
+Where $\lambda_d$ is the precision of the distribution that we have been given.
+We now focus on the terms of the exponent which are dependent on $\mu$:
+
+\begin{equation} \label{engorroso}
+    \begin{aligned}
+        N(\mu + & \bar{x})^{2} + \beta(\mu - \mu_0)^{2}\\
+                = & N\mu^2 +2N\mu\bar{x}+N\bar{x}^2+\beta\mu^2-2\beta\mu\mu_0+\beta\mu_0^2\\
+                = & (\beta+N)\mu^2 - 2\mu(\beta\mu_0 + N\bar{x}) +N\bar{x}^2+\beta\mu_0^2\\
+                = & (\beta+N)\left(\mu^2  - 2\mu \frac{(\beta\mu_0+N\bar{x})}{\beta+N} 
+                    + \left(\frac{\beta\mu_0+N\bar{x}}{\beta+N} \right)^2\right)
+                        +N\bar{x}^2+\beta\mu_0^2 
+                        - \frac{(\beta\mu_0+N\bar{x})^2}{\beta+N}\\
+                = & (\beta+N)\left(\mu  - \left(\frac{\beta\mu_0+N\bar{x}}{\beta+N} \right)\right)^2
+                        +N\bar{x}^2+\beta\mu_0^2 
+                        - \frac{(\beta\mu_0+N\bar{x})^2}{\beta+N}
+    \end{aligned}
+\end{equation}
+We turn our attention to the last three terms:
+
+\begin{equation*}
+    \begin{aligned}
+        N\bar{x}&^2+\beta\mu_0^2 
+                - \frac{(\beta\mu_0+N\bar{x})^2}{\beta+N}\\
+            = & \frac{\beta N\bar{x}^2+2\beta N\bar{x}\mu_0+\beta N\mu_0}{\beta+N}\\
+                = & \beta N \frac{(\bar{x}-\mu_0)^2}{\beta+N}
+    \end{aligned}
+\end{equation*}
+We plug this back into equation \ref{engorroso} and in turn insert equation \ref{engorroso}
+into equation \ref{a-result}:
+\begin{equation*}
+    \begin{aligned}
+        k \lambda^{a_0-1+\frac{N+1}{2}}\beta^{\frac{1}{2}}
+            exp\left\{-\frac{\lambda}{2}\left(
+                    \frac{N}{\lambda_d}
+                +(\beta+N)\left(\mu  - \left(\frac{\beta\mu_0+N\bar{x}}{\beta+N} \right)\right)^2
+                + \beta N \frac{(\bar{x}-\mu_0)^2}{\beta+N}\right)
+            - b\lambda\right\}
+    \end{aligned}
+\end{equation*}
+We can rearrange the previous equation and modify $k$ to be $k / \sqrt{{1+\frac{N}{\beta}}}$:
+\begin{equation*}
+\begin{aligned}
+    \lambda^{a+\frac{N}{2}-1} exp\left\{
+        \left(-b+\frac{1}{2}\left(\frac{N}{\lambda_d} 
+                + \frac{\beta N (\bar{x}-\mu_0)^2}{\beta + N}
+        \right)\right)\lambda 
+    \right\} \\
+    \cdot \left((\beta+N)\lambda \right)^{\frac{1}{2}} 
+          exp\left\{\frac{\beta+N}{2}\lambda
+          \left( \mu - \frac{\beta\mu_0+N\bar{x}}{\beta+N}\right)^2
+    \right\} k'
+\end{aligned}
+\end{equation*}
+From where we can identify:
+\begin{equation*}
+    \begin{aligned}
+        \mu_0' =& \left(\frac{\beta\mu_0+N\bar{x}}{\beta+N}\right)\\
+        \beta' =& \beta+N\\
+        a' =& a + \frac{N}{2}\\
+        b' =& b + \frac{1}{2}\left(\frac{N}{\lambda_d}+\beta N \frac{(\bar{x}-\mu_0)^2}{\beta+N} \right)
+    \end{aligned}
+\end{equation*}
 
 %------------------------------------------ Q 5 ----------------------------------------------------
 \section{Implementation of Logistic Regression and Gaussian Naive-Bayes}
@@ -374,15 +519,18 @@ classification.
 \end{figure}
 
 
+
 %------------------------- a ---------------------------------
 \subsection{Logistic rergession - gradient descent}
 For logistic regression, we chose to carry out a gradient descent implementation. 
 The implementation is contained in the \texttt{LR\textunderscore grad.m} function file with an auxiliary 
 \texttt{find\textunderscore alpha.m} function file. 
 
-Since gradient descent may get stuck on shallow local minima, we chose to iterate the learning process over a 
-randomly-picked collection of 24 weight vectors, aiming at keeping the one that should yield the lesser error 
-after all iterations of gradient descent should be done. 
+Since gradient descent may get stuck on shallow local minima, iterating the learning process over a 
+randomly-picked collection of 24 weight vectors was chosen. The aim of starting with several random 
+initial weights being to ultimately choose the final vector
+that should yield the lesser error after all iterations of gradient descent should be done. 
+\clearpage
 
 \texttt{LR\textunderscore grad.m}:
 
@@ -429,7 +577,7 @@ after all iterations of gradient descent should be done.
 \end{lstlisting}
 
 For each initial vector, an optimal learning rate is chosen from $\{\frac{1}{1}, \frac{1}{2}, \hdots, \frac{1}{10}\}$.
-The learning rates were left fixed, as implementing the Robbins-Monro conditions lead to a substantial degradation
+The learning rates remained fixed since implementing the Robbins-Monro conditions lead to a substantial degradation
 in performance - speedwise. The rationale to support this choice being that as the gradient approaches $0$, the update
 to the $\bm{w}$  vector will inherently be smaller.
 
@@ -454,12 +602,12 @@ The method for finding an optimal learning rate is implemented in the function \
   end
 \end{lstlisting}
 
-In order to perform 10-fold cross-validation, we used matlab's \texttt{cvpartition} function, which yields a
+In order to perform 10-fold cross-validation, we used matlab's \texttt{cvpartition} function, which yields 
 homogenous grouping of entries per fold\footnote{avoiding the final instance of a fold with 4 entries.}. 
 Matlab's \texttt{randperm} was also used to chose the entries randomly but without repetition for each fold.
 The following code from \texttt{A2\textunderscore q5\textunderscore driver.m} conatins the calls to 
 \texttt{LR\textunderscore grad.m}\footnote{The full version also contains calls to the naive Bayes 
-Gaussian classifier, which will appearlater on.n section \ref{gnb}}.
+Gaussian classifier, which will appear later on in section \ref{gnb}}.
 
 \begin{lstlisting}
 	...
@@ -501,8 +649,9 @@ Gaussian classifier, which will appearlater on.n section \ref{gnb}}.
 \end{lstlisting}
 
 The choice of error was made so as to allow a proper comparison with the errors given by the Gaussian naive Bayes, 
-or GNB hereafter. Since for GNB we used log-odds, the translation to a cross-entropy type error becomes rather unwieldy. 
-We have thus take a cost function of the form:
+or GNB hereafter. Since the implementation of GNB that was made for this assignment computes log-odds, 
+the translation to a cross-entropy type error would have proven to be unwieldy. 
+Thus the cost function was chosen to be of the form:
 \begin{equation*}
 	J_w(x_i) = 
 	    \left\{
@@ -514,12 +663,13 @@ We have thus take a cost function of the form:
 \end{equation*}
 
 This is easily done via the following matlab command\footnote{
-Note that only the minimum error of the 24 logistic regressions performed is taken into account since this is one of the main
-reasons for having several random starting vectors.}:
+Note that only the minimum error of the 24 logistic regressions performed is taken into account for computing the error
+since this is one of the main reasons for having several random starting vectors.}:
 \begin{lstlisting}
 	min_err = min(abs(mean(errors_grad, 1)))}
 \end{lstlisting}
 
+\clearpage
 
 %-------------------- b ---------------------
 \subsection{Implementation of GNB classifier}\label{gnb}
@@ -544,9 +694,9 @@ The contents of \texttt{gnb\textunderscore train.m}:
   end
 \end{lstlisting}
 
-We call the readers attention to the fact that the estimated covariance matrix is shared between classes and can be
-estimated with the last three commands of the function, as per the class notes, lecture 3, slide 31, effectively merging
-the covariance matrices of both classes.
+We note that the estimated covariance matrix is shared between classes and can be
+estimated with the last three commands of the function, as per the class notes, lecture 3, slide 31.
+This effectively merges the covariance matrices of both classes.
 
 The contents of \texttt{gnb\textunderscore predict.m}:
 
@@ -581,8 +731,9 @@ $(\bm{x_i} - \bm{\mu_c})^T \bm{\Sigma} ^{-1} (\bm{x_i} - \bm{\mu_c})$ the result
 each $i^{th}$ scalar from the previous expression is contained in the $i^{th}$ diagonal entry of the matrix obtained from 
 $(\bm{X} - \bm{\mu_c})^T \bm{\Sigma} ^{-1} (\bm{X} - \bm{\mu_c})$.
 
-Suffice it to change the line: \texttt{features = 1:33;} to \texttt{features = [1,33];} in order to run a comparison of logistic regression
-vs GNB over a single feature. We then add the following code within the \texttt{folds} loop:
+In order to run a comparison of logistic regression
+vs GNB over a single feature, suffice it to change the line: \texttt{features = 1:33;} to \texttt{features = [1,33];}.  
+We then add the following code within the \texttt{folds} loop:
 \begin{lstlisting}
 	...
     % remove the column of ones, GNB needs no bias as it's 
@@ -595,22 +746,22 @@ vs GNB over a single feature. We then add the following code within the \texttt{
 	...
 \end{lstlisting}
 For logistic regression with gradient descent, using only the first feature of the data-set, the average misclassification rate is about 4.8 per fold,
-depending on the random permutations from which the folds were constructed.  GNB performs only slightly better, typically yielding about 4.6
+depending on the random permutations from which the folds were constructed.  GNB performed only slightly better, typically yielding about 4.6
 misclassifications per fold.
 
 We recall from the end of the section regarding our data, that if we chose to always classify as class 0, we should err 46 times out of 194. If 
-our classifier is misclassifying 4.6 samples per fold and we are doing 10-fold classification it's squarely at the same rate as always choosing class 0.
-Still, however, GNB slightly outperforms our logistic regression almost systematically.
+our classifier misclassified 4.6 samples per-fold during 10-fold classification it's erring at the same rate as always choosing class 0.
+Still, however, GNB slightly outperforms our logistic regression systematically.
 
 %------------------------------------- c ----------------------
 \subsection{Compare Logistic regression and GNB over the whole feature-set}
 In order to classify over the whole feature-set, \texttt{features = [1,33];} needs to be changed back to \texttt{features = 1:33;}. The accuracy 
-of logistic regression falls slightly to an average rate of misclassification of around 5.6 per-fold while GNB continues to misclassify about 4.6 times
-per-fold on average. However many times we run the routine, GNB systematically outperforms logistic regression. 
+of logistic regression fell slightly to an average rate of misclassification of around 5.6 per-fold while GNB continued to misclassify about 4.6 times
+per-fold on average, systematically outperforming logistic regression.
 
-The error rate is still on par with arbitrarily always choosing class 0, however GNB actually does choose class 1 sometimes as we can see in figure 
-\ref{5-gnb}. Yet it does end up choosing class 0 fairly often, as one would expect given the $log\frac{P( y = 1)}{P(y = 0)}$ term of the 
-log-odds equation\footnote{Which in this case is roughly -0.5 }.
+The error rate remained on par with arbitrarily always choosing class 0, however GNB actually did choose class 1 sometimes as we can see in figure 
+\ref{5-gnb}. It did, however, end up choosing class 0 fairly often as one would expect given the $log\frac{P( y = 1)}{P(y = 0)}$ term of the 
+log-odds equation\footnote{Which in this case is roughly -0.5 } and the proximity of the distributions per class accross features.
 
 \begin{figure}[H]
 \begin{center}
